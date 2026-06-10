@@ -1,0 +1,107 @@
+.admin-root {
+	display: flex;
+	min-height: 100vh;
+	background: #f8fafc;
+	font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+}
+
+:root{
+	--bg: #f8fafc;
+	--panel: #ffffff;
+	--muted: #64748b;
+	--accent: #2563eb;
+	--surface-shadow: 0 8px 30px rgba(2,6,23,0.06);
+}
+
+.admin-sidebar {
+	width: 220px;
+	background: #0f172a;
+	color: #fff;
+	padding: 2rem 1rem;
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+	box-shadow: 0 4px 24px rgba(2,6,23,0.08) inset;
+}
+.admin-sidebar .brand {
+	font-weight: 800;
+	font-size: 1.15rem;
+	letter-spacing: -0.2px;
+}
+.admin-nav { display:flex; flex-direction:column; gap:0.5rem; margin-top:0.25rem }
+.admin-nav .nav-item {
+	color: rgba(255,255,255,0.92);
+	text-decoration: none;
+	padding: 0.6rem 0.6rem;
+	border-radius: 0.6rem;
+	display: inline-block;
+}
+.admin-nav .nav-item:hover, .admin-nav .nav-item.active { background: rgba(255,255,255,0.04); }
+
+.admin-main { flex: 1; display:flex; flex-direction:column; }
+.admin-topbar {
+	height: 64px;
+	display:flex;
+	align-items:center;
+	justify-content:space-between;
+	padding: 0 1.25rem;
+	background: linear-gradient(90deg,#fff,#f8fafc);
+	border-bottom: 1px solid #e6eef8;
+}
+.topbar-left { display:flex; align-items:center; gap:1rem }
+.topbar-search { padding:0.5rem 0.75rem; border-radius:0.6rem; border:1px solid #e6eef8; background:var(--panel) }
+
+.admin-content { padding: 2rem; max-width: 1200px; margin: 0 auto; width:100% }
+.admin-title { margin:0 0 1rem; font-size:1.6rem; color: #0f172a }
+
+.admin-stats { display:grid; grid-template-columns: repeat(4, 1fr); gap:1rem; margin-bottom:1.5rem }
+.stat-card { background: var(--panel); padding:1rem; border-radius:1rem; box-shadow: var(--surface-shadow); text-align:center }
+.stat-value { font-size:1.35rem; font-weight:800; color:#0f172a }
+.stat-label { color:var(--muted); margin-top:0.25rem; font-size:0.9rem }
+
+.admin-section { background: var(--panel); padding:1rem; border-radius:0.85rem; margin-bottom:1rem }
+
+.table { width:100%; border-radius:0.5rem; overflow:hidden; border: 1px solid #eef4fb }
+.tr { display:grid; grid-template-columns: 1fr 1fr 1fr; padding:0.75rem 1rem; border-bottom:1px solid #eef2f6; align-items:center }
+
+/* Table variants: use modifier classes on the table container to switch layouts */
+.table--four .tr { grid-template-columns: 1fr 1fr 1fr 160px }
+.table--three .tr { grid-template-columns: 2fr 3fr 120px }
+.table--two .tr { grid-template-columns: 1fr 180px }
+.tr.header { background:#f1f8ff; font-weight:700 }
+.td { padding:0.25rem 0 }
+.td.center { text-align:center }
+.actions { display:flex; gap:0.5rem; justify-content:flex-end }
+.tr .td .btn { padding:0.4rem 0.6rem; font-size:0.9rem }
+
+.btn { background:var(--accent); color:#fff; padding:0.5rem 0.85rem; border-radius:0.6rem; border:none; cursor:pointer }
+.btn.muted { background:transparent; color:var(--muted); border:1px solid #e6eef8 }
+.btn.danger { background:#ef4444 }
+.btn-outline { background:transparent; color:var(--accent); border:1px solid #cfe0ff }
+
+input[type="text"], input[type="email"], input[type="time"], textarea {
+	padding:0.45rem 0.6rem; border-radius:0.5rem; border:1px solid #e6eef8; width:100%; box-sizing:border-box; background:var(--panel)
+}
+
+@media(max-width:1100px){
+	.admin-stats{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:900px){
+	.admin-sidebar{display:none}
+	.tr{grid-template-columns:1fr}
+	.actions{justify-content:flex-start}
+	.admin-content{padding:1rem}
+}
+
+/* Realtime panel */
+.realtime-panel { background:var(--panel); padding:1rem; border-radius:0.75rem; box-shadow:var(--surface-shadow) }
+.realtime-title { margin:0 0 0.5rem; font-weight:700 }
+.realtime-list { display:flex; flex-direction:column; gap:0.5rem; max-height:360px; overflow:auto }
+.realtime-item { padding:0.6rem; border-radius:0.5rem; background:#f8fafc; display:flex; flex-direction:column }
+.realtime-item__title { font-weight:700 }
+.realtime-item__meta { color:var(--muted); font-size:0.875rem }
+.realtime-empty { color:#94a3b8; text-align:center; padding:1rem 0 }
+
+/* small helpers */
+.muted { color: var(--muted) }
+.card-row { display:flex; gap:1rem; align-items:center }
