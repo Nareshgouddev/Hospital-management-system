@@ -3,113 +3,95 @@ import { Facebook, Twitter, Instagram, Linkedin, Mail, Phone, MapPin } from 'luc
 
 export default function Footer() {
   return (
-    <footer className="bg-slate-900 text-slate-300 pt-16 pb-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <footer className="site-footer">
+      <div className="site-footer__inner">
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+        <div className="site-footer__grid">
 
-          {/* 🔥 BRAND (FIXED) */}
-          <div className="space-y-6">
-            <Link to="/" className="flex items-center gap-3">
-
-              {/* Logo */}
-              <div className="bg-white p-1.5 rounded-lg flex items-center justify-center">
+          {/* Brand */}
+          <div className="site-footer__brand-col">
+            <Link to="/" className="site-footer__brand">
+              <div className="site-footer__logo-wrap">
                 <img
-                  src="https://res.cloudinary.com/dgcyqntse/image/upload/v1773725210/1000572077-removebg-preview_o0stug.png"
-                  alt="Q9 Hospital Logo"
-                  className="w-10 h-10 object-contain"
+                  src="/logo.jpeg"
+                  alt="Hospital Logo"
+                  className="site-footer__logo-img"
                 />
               </div>
-
-              {/* Text */}
-              <div className="leading-tight">
-                <h2 className="text-lg font-bold text-white tracking-wide">
-                  Q9 MULTY SPECIALITY
-                </h2>
-                <p className="text-sm text-blue-500 font-medium">
-                  HOSPITAL
-                </p>
+              <div className="site-footer__brand-text">
+                <span className="site-footer__brand-name">Q9 Multy Speciality</span>
+                <span className="site-footer__brand-sub">Hospital</span>
               </div>
-
             </Link>
 
-            <p className="text-slate-400 leading-relaxed text-sm">
+            <p className="site-footer__desc">
               Providing world-class healthcare services with a patient-first approach.
               Our mission is to improve lives through advanced medical technology and compassionate care.
             </p>
 
-            {/* Social Icons */}
-            <div className="flex space-x-4">
+            <div className="site-footer__socials">
               {[Facebook, Twitter, Instagram, Linkedin].map((Icon, i) => (
-                <a
-                  key={i}
-                  href="#"
-                  className="p-2 bg-slate-800 rounded-full hover:bg-blue-600 hover:text-white transition"
-                >
-                  <Icon className="h-5 w-5" />
+                <a key={i} href="#" className="site-footer__social-link">
+                  <Icon />
                 </a>
               ))}
             </div>
           </div>
 
           {/* Quick Links */}
-          <div>
-            <h3 className="text-white font-semibold text-lg mb-6">Quick Links</h3>
-            <ul className="space-y-4">
-              <li><Link to="/about" className="hover:text-blue-400 transition">About Us</Link></li>
-              <li><Link to="/doctors" className="hover:text-blue-400 transition">Our Doctors</Link></li>
-              <li><Link to="/departments" className="hover:text-blue-400 transition">Departments</Link></li>
-              <li><Link to="/services" className="hover:text-blue-400 transition">Services</Link></li>
-              <li><Link to="/appointment" className="hover:text-blue-400 transition">Book Appointment</Link></li>
+          <div className="site-footer__links-col">
+            <h3 className="site-footer__heading">Quick Links</h3>
+            <ul className="site-footer__list">
+              <li><Link to="/about">About Us</Link></li>
+              <li><Link to="/doctors">Our Doctors</Link></li>
+              <li><Link to="/departments">Departments</Link></li>
+              <li><Link to="/services">Services</Link></li>
+              <li><Link to="/appointment">Book Appointment</Link></li>
             </ul>
           </div>
 
           {/* Departments */}
-          <div>
-            <h3 className="text-white font-semibold text-lg mb-6">Departments</h3>
-            <ul className="space-y-4">
-              <li><Link to="/departments" className="hover:text-blue-400 transition">Cardiology</Link></li>
-              <li><Link to="/departments" className="hover:text-blue-400 transition">Neurology</Link></li>
-              <li><Link to="/departments" className="hover:text-blue-400 transition">Orthopedics</Link></li>
-              <li><Link to="/departments" className="hover:text-blue-400 transition">Pediatrics</Link></li>
-              <li><Link to="/departments" className="hover:text-blue-400 transition">Dermatology</Link></li>
+          <div className="site-footer__links-col">
+            <h3 className="site-footer__heading">Departments</h3>
+            <ul className="site-footer__list">
+              <li><Link to="/departments">Cardiology</Link></li>
+              <li><Link to="/departments">Neurology</Link></li>
+              <li><Link to="/departments">Orthopedics</Link></li>
+              <li><Link to="/departments">Pediatrics</Link></li>
+              <li><Link to="/departments">Dermatology</Link></li>
             </ul>
           </div>
 
           {/* Contact */}
-          <div>
-            <h3 className="text-white font-semibold text-lg mb-6">Contact Us</h3>
-            <ul className="space-y-4 text-sm">
-
-              <li className="flex items-start gap-3">
-                <MapPin className="h-5 w-5 text-blue-500 mt-1" />
+          <div className="site-footer__links-col">
+            <h3 className="site-footer__heading">Contact Us</h3>
+            <ul className="site-footer__contact-list">
+              <li>
+                <MapPin />
                 <span>
                   D.No: 10-21/1/6, Sriramanagar,<br />
                   Near Petrol Bunk, Opp. GVMC Park,<br />
                   Lankelapalem, Anakapalli Dist - 531019
                 </span>
               </li>
-
-              <li className="flex items-center gap-3">
-                <Phone className="h-5 w-5 text-blue-500" />
+              <li>
+                <Phone />
                 <span>
                   +91 7702021224<br />
                   +91 7672021224
                 </span>
               </li>
-
-              <li className="flex items-center gap-3">
-                <Mail className="h-5 w-5 text-blue-500" />
+              <li>
+                <Mail />
                 <span>q9hospital2026@gmail.com</span>
               </li>
-
             </ul>
           </div>
 
         </div>
 
         {/* Bottom */}
-        <div className="pt-8 border-t border-slate-800 text-center text-sm text-slate-500">
+        <div className="site-footer__bottom">
           <p>© {new Date().getFullYear()} Q9 Multy Speciality Hospital. All rights reserved.</p>
         </div>
 

@@ -1,5 +1,5 @@
 import Navbar from './components/Navbar'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import Home from './pages/Home'
 import Department from './pages/Department'
 import Doctors from './pages/DoctorListPage'
@@ -8,17 +8,29 @@ import AppointmentHistory from './pages/AppointmentHistorypage'
 import Contact from './pages/Contact'
 import About from './pages/About'
 import Services from './pages/Services'
+// import Footer from './components/Footer'
+
+// Admin
+import Login from './pages/Login'
+import RegisterPage from './pages/RegisterPage'
+import RequireAdmin from './components/RequireAdmin'
+import AdminLayout from './components/AdminLayout'
 import AdminDashboard from './pages/AdminDashboard'
 import AdminDoctors from './pages/admin/AdminDoctors'
 import AdminDepartments from './pages/admin/AdminDepartments'
 import AdminAppointments from './pages/admin/AdminAppointments'
 
 const App = () => {
+  const location = useLocation()
+  const isAdminRoute = location.pathname.startsWith('/admin')
+
   return (
     <div>
-      <Navbar />
+      {/* Hide Navbar and Footer on admin pages */}
+      {!isAdminRoute && <Navbar />}
       <main>
         <Routes>
+          {/* Public routes */}
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<Home />} />
           <Route path="/home" element={<Home />} />
@@ -29,13 +41,30 @@ const App = () => {
           <Route path="/contact" element={<Contact />} />
           <Route path="/about" element={<About />} />
           <Route path="/services" element={<Services />} />
-          <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/admin/doctors" element={<AdminDoctors />} />
-          <Route path="/admin/departments" element={<AdminDepartments />} />
-          <Route path="/admin/appointments" element={<AdminAppointments />} />
+
+          {/* Admin auth routes (no sidebar/topbar) */}
+          <Route path="/admin/login" element={<Login />} />
+          <Route path="/admin/register" element={<RegisterPage />} />
+
+          {/* Protected admin routes with layout */}
+          <Route
+            path="/admin"
+            element={
+              <RequireAdmin>
+                <AdminLayout />
+              </RequireAdmin>
+            }
+          >
+            <Route index element={<AdminDashboard />} />
+            <Route path="doctors" element={<AdminDoctors />} />
+            <Route path="departments" element={<AdminDepartments />} />
+            <Route path="appointments" element={<AdminAppointments />} />
+          </Route>
+
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </main>
+      {/* {!isAdminRoute && <Footer />} */}
     </div>
   )
 }

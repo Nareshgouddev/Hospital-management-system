@@ -1,75 +1,167 @@
 import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Activity, UserPlus } from "lucide-react";
+import "../styles/admin.css";
 
-function RegisterPage({ goToLogin }) {
+function RegisterPage() {
   const [registerData, setRegisterData] = useState({
     id: "",
     password: "",
-    role: "Doctor",
+    confirmPassword: "",
+    role: "Admin",
   });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleRegister = (e) => {
     e.preventDefault();
+    setError("");
 
-    localStorage.setItem(
-      registerData.id,
-      JSON.stringify(registerData)
-    );
+    if (registerData.password !== registerData.confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
 
-    alert("Registration Successful");
-    goToLogin();
+    if (registerData.password.length < 4) {
+      setError("Password must be at least 4 characters.");
+      return;
+    }
+
+    // Check if user already exists
+    const existing = localStorage.getItem(registerData.id);
+    if (existing) {
+      setError("An account with this ID already exists.");
+      return;
+    }
+
+    setLoading(true);
+
+    setTimeout(() => {
+      localStorage.setItem(
+        registerData.id,
+        JSON.stringify({
+          id: registerData.id,
+          password: registerData.password,
+          role: registerData.role,
+        })
+      );
+
+      navigate("/admin/login", { replace: true });
+    }, 600);
   };
 
   return (
-    <div className="form-card">
-      <h2>Register</h2>
+    <div className="admin-auth-page">
+      {/* Left visual panel */}
+      <div className="admin-auth-page__visual">
+        <div className="admin-auth-page__visual-content">
+          <div className="admin-auth-page__visual-logo">
+            <Activity />
+          </div>
+          <h1 className="admin-auth-page__visual-title">Wellness Village</h1>
+          <p className="admin-auth-page__visual-text">
+            Create your admin account to start managing hospital operations. Set up doctors, departments, and track appointments seamlessly.
+          </p>
+        </div>
+      </div>
 
-      <form onSubmit={handleRegister}>
-        <input
-          type="text"
-          placeholder="User ID"
-          value={registerData.id}
-          onChange={(e) =>
-            setRegisterData({
-              ...registerData,
-              id: e.target.value,
-            })
-          }
-          required
-        />
+      {/* Right form panel */}
+      <div className="admin-auth-page__form-side">
+        <div className="admin-auth-card">
+          <div className="admin-auth-card__header">
+            <h2 className="admin-auth-card__title">Create Account</h2>
+            <p className="admin-auth-card__desc">
+              Register a new admin account to get started
+            </p>
+          </div>
 
-        <input
-          type="password"
-          placeholder="Password"
-          value={registerData.password}
-          onChange={(e) =>
-            setRegisterData({
-              ...registerData,
-              password: e.target.value,
-            })
-          }
-          required
-        />
+          {error && <div className="admin-auth-card__error">{error}</div>}
 
-        <select
-          value={registerData.role}
-          onChange={(e) =>
-            setRegisterData({
-              ...registerData,
-              role: e.target.value,
-            })
-          }
-        >
-          <option value="Doctor">Doctor</option>
-          <option value="Admin">Admin</option>
-        </select>
+          <form onSubmit={handleRegister}>
+            <div className="admin-auth-field">
+              <label className="admin-auth-field__label">Admin ID</label>
+              <input
+                type="text"
+                className="admin-auth-field__input"
+                placeholder="Choose a unique admin ID"
+                value={registerData.id}
+                onChange={(e) =>
+                  setRegisterData({
+                    ...registerData,
+                    id: e.target.value,
+                  })
+                }
+                required
+              />
+            </div>
 
-        <button type="submit">Register</button>
-      </form>
+            <div className="admin-auth-field">
+              <label className="admin-auth-field__label">Password</label>
+              <input
+                type="password"
+                className="admin-auth-field__input"
+                placeholder="Create a password"
+                value={registerData.password}
+                onChange={(e) =>
+                  setRegisterData({
+                    ...registerData,
+                    password: e.target.value,
+                  })
+                }
+                required
+              />
+            </div>
 
-      <p>
-        Already have an account?
-        <span onClick={goToLogin}> Login</span>
-      </p>
+            <div className="admin-auth-field">
+              <label className="admin-auth-field__label">Confirm Password</label>
+              <input
+                type="password"
+                className="admin-auth-field__input"
+                placeholder="Confirm your password"
+                value={registerData.confirmPassword}
+                onChange={(e) =>
+                  setRegisterData({
+                    ...registerData,
+                    confirmPassword: e.target.value,
+                  })
+                }
+                required
+              />
+            </div>
+
+            <div className="admin-auth-field">
+              <label className="admin-auth-field__label">Role</label>
+              <select
+                className="admin-auth-field__select"
+                value={registerData.role}
+                onChange={(e) =>
+                  setRegisterData({
+                    ...registerData,
+                    role: e.target.value,
+                  })
+                }
+              >
+                <option value="Admin">Administrator</option>
+                <option value="Doctor">Doctor</option>
+              </select>
+            </div>
+
+            <button
+              type="submit"
+              className="admin-auth-card__submit"
+              disabled={loading}
+            >
+              {loading ? "Creating Account..." : "Create Account"}
+            </button>
+          </form>
+
+          <p className="admin-auth-card__footer">
+            Already have an account?
+            <Link to="/admin/login">Sign In</Link>
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
