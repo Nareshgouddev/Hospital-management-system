@@ -148,12 +148,18 @@ export default function AppointmentForm() {
               <label className="appointment-form__label">Doctor</label>
               <select
                 required
-                disabled={!formData.department}
                 className="appointment-form__select"
                 value={formData.doctor}
-                onChange={(e) =>
-                  setFormData({ ...formData, doctor: e.target.value })
-                }
+                onChange={(e) => {
+                  const docId = e.target.value;
+                  const selectedDoc = doctors.find(d => d.id === docId);
+                  setFormData(prev => ({ 
+                    ...prev, 
+                    doctor: docId,
+                    // Auto-select department if a doctor is chosen and department is empty
+                    department: selectedDoc && !prev.department ? selectedDoc.department : prev.department 
+                  }));
+                }}
               >
                 <option value="">Select Doctor</option>
                 {filteredDoctors.map((doc) => (
@@ -181,15 +187,19 @@ export default function AppointmentForm() {
             {/* Gender */}
             <div className="appointment-form__field">
               <label className="appointment-form__label">Gender</label>
-              <input
+              <select
                 required
-                type="text"
-                className="appointment-form__input"
-                value={formData.name}
+                className="appointment-form__select"
+                value={formData.gender}
                 onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
+                  setFormData({ ...formData, gender: e.target.value })
                 }
-              />
+              >
+                <option value="">Select Gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
             </div>
 
             {/* Time */}

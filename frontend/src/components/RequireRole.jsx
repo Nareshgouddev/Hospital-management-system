@@ -1,6 +1,7 @@
+import React from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
 
-export default function RequireAdmin({ children }) {
+export default function RequireRole({ children, roles }) {
   const location = useLocation()
   let session = null
   try {
@@ -10,8 +11,9 @@ export default function RequireAdmin({ children }) {
     session = null
   }
 
-  if (!session || (session.role !== 'Admin' && session.role !== 'Doctor')) {
-    return <Navigate to="/admin/login" state={{ from: location }} replace />
+  if (!session || !roles.includes(session.role)) {
+    // If not authorized for this specific role, redirect back to dashboard
+    return <Navigate to="/admin" replace />
   }
 
   return children

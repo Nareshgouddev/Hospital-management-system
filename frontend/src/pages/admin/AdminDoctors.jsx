@@ -7,14 +7,14 @@ export default function AdminDoctors(){
   const [doctors, setDoctors] = React.useState(()=>{
     try{ const raw = localStorage.getItem(storageKey); return raw ? JSON.parse(raw) : (initialDoctors || []) }catch(e){ return (initialDoctors||[]) }
   })
-  const [form, setForm] = React.useState({ name:'', specialty:'', email:'' })
+  const [form, setForm] = React.useState({ name:'', specialty:'', email:'', description:'' })
   const [editingId, setEditingId] = React.useState(null)
 
   React.useEffect(()=>{
     function onEvent(e){
       const ev = e.detail
       if (ev && ev.title && ev.title.toLowerCase().includes('doctor')){
-        setDoctors(prev => [ { id: Date.now(), name: ev.payload?.patient || 'New Doctor', specialty:'General', email:'' }, ...prev ])
+        setDoctors(prev => [ { id: Date.now(), name: ev.payload?.patient || 'New Doctor', specialty:'General', email:'', description:'' }, ...prev ])
       }
     }
     window.addEventListener('realtime:event', onEvent)
@@ -32,11 +32,11 @@ export default function AdminDoctors(){
     } else {
       setDoctors(prev=>[{ id: Date.now(), ...form }, ...prev])
     }
-    setForm({name:'',specialty:'',email:''})
+    setForm({name:'',specialty:'',email:'',description:''})
   }
 
-  function startEdit(d){ setEditingId(d.id); setForm({ name:d.name||'', specialty:d.specialty||d.specialization||'', email:d.email||'' }) }
-  function cancelEdit(){ setEditingId(null); setForm({name:'',specialty:'',email:''}) }
+  function startEdit(d){ setEditingId(d.id); setForm({ name:d.name||'', specialty:d.specialty||d.specialization||'', email:d.email||'', description:d.description||'' }) }
+  function cancelEdit(){ setEditingId(null); setForm({name:'',specialty:'',email:'',description:''}) }
   function deleteDoctor(id){ setDoctors(prev=>prev.filter(d=>d.id!==id)) }
 
   return (
@@ -51,17 +51,19 @@ export default function AdminDoctors(){
           <input placeholder="Doctor Name" value={form.name} onChange={e=>setForm({...form,name:e.target.value})} required />
           <input placeholder="Specialty" value={form.specialty} onChange={e=>setForm({...form,specialty:e.target.value})} />
           <input placeholder="Email" value={form.email} onChange={e=>setForm({...form,email:e.target.value})} />
+          <input placeholder="Description" value={form.description} onChange={e=>setForm({...form,description:e.target.value})} />
           <button className="btn" type="submit">
             {editingId ? 'Update' : 'Add Doctor'}
           </button>
           {editingId && <button type="button" className="btn muted" onClick={cancelEdit}>Cancel</button>}
         </form>
 
-        <div className="table table--four">
+        <div className="table table--five">
           <div className="tr header">
             <div className="td">Name</div>
             <div className="td">Specialty</div>
             <div className="td">Email</div>
+            <div className="td">Description</div>
             <div className="td">Actions</div>
           </div>
           {doctors.map(d=> (
@@ -71,6 +73,7 @@ export default function AdminDoctors(){
                   <div className="td"><input value={form.name} onChange={e=>setForm({...form,name:e.target.value})} /></div>
                   <div className="td"><input value={form.specialty} onChange={e=>setForm({...form,specialty:e.target.value})} /></div>
                   <div className="td"><input value={form.email} onChange={e=>setForm({...form,email:e.target.value})} /></div>
+                  <div className="td"><input value={form.description} onChange={e=>setForm({...form,description:e.target.value})} placeholder="Description" /></div>
                   <div className="td">
                     <button className="btn" onClick={addDoctor}>Save</button>
                     <button className="btn muted" onClick={cancelEdit} style={{marginLeft:4}}>Cancel</button>
@@ -81,6 +84,7 @@ export default function AdminDoctors(){
                   <div className="td">{d.name}</div>
                   <div className="td">{d.specialty || d.specialization || '—'}</div>
                   <div className="td">{d.email||'—'}</div>
+                  <div className="td">{d.description||'—'}</div>
                   <div className="td">
                     <button className="btn" onClick={()=>startEdit(d)} style={{marginRight:4}}>Edit</button>
                     <button className="btn danger" onClick={()=>deleteDoctor(d.id)}>Delete</button>

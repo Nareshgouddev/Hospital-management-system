@@ -26,7 +26,16 @@ export default function AdminDashboard(){
     }
   }, [liveStats])
 
-  const statCards = [
+  let session = {}
+  try { session = JSON.parse(localStorage.getItem('admin:session') || '{}') } catch(e){}
+  const isDoctor = session.role === 'Doctor'
+
+  const statCards = isDoctor ? [
+    { label: 'My Appointments', value: 8, icon: CalendarCheck, color: '#3b82f6' },
+    { label: 'My Patients', value: 24, icon: Users, color: '#10b981' },
+    { label: 'Services', value: localStats.services, icon: Activity, color: '#8b5cf6' },
+    { label: 'Pending Reports', value: 3, icon: Activity, color: '#f59e0b' },
+  ] : [
     { label: 'Doctors', value: localStats.doctors, icon: Users, color: '#3b82f6' },
     { label: 'Departments', value: localStats.departments, icon: Building2, color: '#10b981' },
     { label: 'Services', value: localStats.services, icon: Activity, color: '#8b5cf6' },
@@ -48,29 +57,31 @@ export default function AdminDashboard(){
 
       <div style={{display:'flex', gap:'1.5rem', alignItems:'flex-start'}}>
         <div style={{flex:1, minWidth: 0}}>
-          <section className="admin-section">
-            <h2>Recent Doctors</h2>
-            <div className="table">
-              <div className="tr header">
-                <div className="td">Name</div>
-                <div className="td">Specialty</div>
-                <div className="td">Department</div>
-              </div>
-              {doctors.slice(0,6).map(d=> (
-                <div className="tr" key={d.id}>
-                  <div className="td">{d.name}</div>
-                  <div className="td">{d.specialization || '—'}</div>
-                  <div className="td">{d.department || '—'}</div>
+          {!isDoctor && (
+            <section className="admin-section">
+              <h2>Recent Doctors</h2>
+              <div className="table">
+                <div className="tr header">
+                  <div className="td">Name</div>
+                  <div className="td">Specialty</div>
+                  <div className="td">Department</div>
                 </div>
-              ))}
-            </div>
-          </section>
+                {doctors.slice(0,6).map(d=> (
+                  <div className="tr" key={d.id}>
+                    <div className="td">{d.name}</div>
+                    <div className="td">{d.specialization || '—'}</div>
+                    <div className="td">{d.department || '—'}</div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
 
           <section className="admin-section">
             <h2>Quick Actions</h2>
             <div className="actions">
-              <Link to="/admin/doctors" className="btn">Manage Doctors</Link>
-              <Link to="/admin/departments" className="btn btn-outline">Manage Departments</Link>
+              {!isDoctor && <Link to="/admin/doctors" className="btn">Manage Doctors</Link>}
+              {!isDoctor && <Link to="/admin/departments" className="btn btn-outline">Manage Departments</Link>}
               <Link to="/admin/appointments" className="btn btn-outline">View Appointments</Link>
             </div>
           </section>

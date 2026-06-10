@@ -10,12 +10,16 @@ export default function AdminSidebar() {
     navigate('/admin/login', { replace: true })
   }
 
+  let session = {}
+  try { session = JSON.parse(localStorage.getItem('admin:session') || '{}') } catch(e){}
+
   const links = [
     { to: '/admin', icon: LayoutDashboard, label: 'Dashboard', end: true },
-    { to: '/admin/doctors', icon: Users, label: 'Doctors' },
-    { to: '/admin/departments', icon: Building2, label: 'Departments' },
+    { to: '/admin/doctors', icon: Users, label: 'Doctors', adminOnly: true },
+    { to: '/admin/departments', icon: Building2, label: 'Departments', adminOnly: true },
     { to: '/admin/appointments', icon: CalendarCheck, label: 'Appointments' },
   ]
+  const filteredLinks = links.filter(link => !link.adminOnly || session.role === 'Admin')
 
   return (
     <aside className="admin-sidebar">
@@ -25,13 +29,13 @@ export default function AdminSidebar() {
         </div>
         <div className="admin-sidebar__brand">
           <span className="admin-sidebar__title">Wellness Village</span>
-          <span className="admin-sidebar__subtitle">Admin Panel</span>
+          <span className="admin-sidebar__subtitle">{session.role === 'Doctor' ? 'Doctor Panel' : 'Admin Panel'}</span>
         </div>
       </div>
 
       <nav className="admin-sidebar__nav">
         <div className="admin-sidebar__section-label">Main Menu</div>
-        {links.map(link => (
+        {filteredLinks.map(link => (
           <NavLink
             key={link.to}
             to={link.to}

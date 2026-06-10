@@ -419,6 +419,10 @@
   grid-template-columns: 1fr 1fr 1fr auto;
 }
 
+.table--five .tr {
+  grid-template-columns: 1fr 1fr 1fr 1.5fr auto;
+}
+
 .tr.header {
   background: #f8fafc;
   border-bottom: 2px solid #e2e8f0;

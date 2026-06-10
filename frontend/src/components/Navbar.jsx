@@ -11,7 +11,7 @@ const Navbar = () => {
     { name: 'Departments', to: '/departments' },
     { name: 'Doctors', to: '/doctors' },
     { name: 'Book Appointment', to: '/appointment' },
-    { name: 'Appointments', to: '/appointments' },
+    // { name: 'Appointments', to: '/appointments' },
     { name: 'Services', to: '/services' },
     { name: 'Contact', to: '/contact' },
     { name: 'About', to: '/about' },

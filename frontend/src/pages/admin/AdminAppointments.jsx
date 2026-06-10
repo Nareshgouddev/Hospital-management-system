@@ -7,7 +7,11 @@ export default function AdminAppointments(){
   const [items, setItems] = React.useState(()=>{
     try{ const raw = localStorage.getItem(storageKey); return raw ? JSON.parse(raw) : initial }catch(e){ return initial }
   })
-  const [form, setForm] = React.useState({ patient:'', time:'', doctor:'' })
+  let session = {}
+  try { session = JSON.parse(localStorage.getItem('admin:session') || '{}') } catch(e){}
+  const isDoctor = session.role === 'Doctor'
+
+  const [form, setForm] = React.useState({ patient:'', time:'', doctor: isDoctor ? session.id : '' })
   const [editingId, setEditingId] = React.useState(null)
 
   React.useEffect(()=>{
@@ -31,13 +35,13 @@ export default function AdminAppointments(){
       setItems(prev=>prev.map(it=> it.id===editingId ? { ...it, ...form } : it))
       setEditingId(null)
     } else {
-      setItems(prev=>[{ id: Date.now(), ...form }, ...prev])
+      setItems(prev=>[{ id: Date.now(), ...form, doctor: isDoctor ? session.id : form.doctor }, ...prev])
     }
-    setForm({ patient:'', time:'', doctor:'' })
+    setForm({ patient:'', time:'', doctor: isDoctor ? session.id : '' })
   }
 
   function startEdit(it){ setEditingId(it.id); setForm({ patient:it.patient||'', time:it.time||'', doctor:it.doctor||'' }) }
-  function cancelEdit(){ setEditingId(null); setForm({ patient:'', time:'', doctor:'' }) }
+  function cancelEdit(){ setEditingId(null); setForm({ patient:'', time:'', doctor: isDoctor ? session.id : '' }) }
   function deleteItem(id){ setItems(prev=>prev.filter(it=>it.id!==id)) }
 
   return (
@@ -51,7 +55,7 @@ export default function AdminAppointments(){
         <form onSubmit={add} className="admin-form-row">
           <input placeholder="Patient Name" value={form.patient} onChange={e=>setForm({...form,patient:e.target.value})} required />
           <input placeholder="Time" value={form.time} onChange={e=>setForm({...form,time:e.target.value})} required />
-          <input placeholder="Doctor" value={form.doctor} onChange={e=>setForm({...form,doctor:e.target.value})} required />
+          {!isDoctor && <input placeholder="Doctor" value={form.doctor} onChange={e=>setForm({...form,doctor:e.target.value})} required />}
           <button className="btn" type="submit">
             {editingId ? 'Update' : 'Add Appointment'}
           </button>
@@ -65,13 +69,13 @@ export default function AdminAppointments(){
             <div className="td">Doctor</div>
             <div className="td">Actions</div>
           </div>
-          {items.map(it=> (
+          {(isDoctor ? items.filter(it => it.doctor && it.doctor.toLowerCase().includes(session.id.toLowerCase())) : items).map(it=> (
             <div className="tr" key={it.id}>
               {editingId === it.id ? (
                 <>
                   <div className="td"><input value={form.patient} onChange={e=>setForm({...form,patient:e.target.value})} /></div>
                   <div className="td"><input value={form.time} onChange={e=>setForm({...form,time:e.target.value})} /></div>
-                  <div className="td"><input value={form.doctor} onChange={e=>setForm({...form,doctor:e.target.value})} /></div>
+                  <div className="td">{isDoctor ? it.doctor : <input value={form.doctor} onChange={e=>setForm({...form,doctor:e.target.value})} />}</div>
                   <div className="td">
                     <button className="btn" onClick={add}>Save</button>
                     <button className="btn muted" onClick={cancelEdit} style={{marginLeft:4}}>Cancel</button>
@@ -90,7 +94,7 @@ export default function AdminAppointments(){
               )}
             </div>
           ))}
-          {items.length === 0 && (
+          {(isDoctor ? items.filter(it => it.doctor && it.doctor.toLowerCase().includes(session.id.toLowerCase())) : items).length === 0 && (
             <div className="tr"><div className="td" style={{gridColumn:'1/-1', textAlign:'center', color:'#94a3b8'}}>No appointments yet.</div></div>
           )}
         </div>

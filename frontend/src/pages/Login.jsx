@@ -33,15 +33,15 @@ function Login() {
         return;
       }
 
-      if (user.role !== "Admin") {
-        setError("Access denied. This account does not have admin privileges.");
+      if (user.role !== "Admin" && user.role !== "Doctor") {
+        setError("Access denied. Valid role required.");
         setLoading(false);
         return;
       }
 
       localStorage.setItem(
         "admin:session",
-        JSON.stringify({ id: user.id, role: "Admin" })
+        JSON.stringify({ id: user.id, role: user.role })
       );
       navigate("/admin", { replace: true });
     }, 600);
