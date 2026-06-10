@@ -1,0 +1,162 @@
+.doctor-card,
+.department-card {
+	background: #fff;
+	border: 1px solid var(--border, #e5e4e7);
+	border-radius: 1.5rem;
+	box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+	transition:
+		transform 180ms ease,
+		box-shadow 180ms ease,
+		border-color 180ms ease;
+	height: 100%;
+}
+
+.doctor-card:hover,
+.department-card:hover {
+	box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+	border-color: rgba(59, 130, 246, 0.18);
+}
+
+.doctor-card {
+	padding: 1.5rem;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+}
+
+.doctor-card__icon,
+.department-card__icon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition:
+		background-color 180ms ease,
+		color 180ms ease;
+}
+
+.doctor-card__icon {
+	width: 4rem;
+	height: 4rem;
+	border-radius: 999px;
+	background: rgba(59, 130, 246, 0.08);
+	margin-bottom: 1.25rem;
+}
+
+.doctor-card__icon svg {
+	width: 2rem;
+	height: 2rem;
+	color: #2563eb;
+}
+
+.doctor-card:hover .doctor-card__icon {
+	background: #2563eb;
+}
+
+.doctor-card:hover .doctor-card__icon svg {
+	color: #fff;
+}
+
+.doctor-card__name {
+	margin: 0 0 0.5rem;
+	font-size: 1.25rem;
+	line-height: 1.2;
+	font-weight: 700;
+	color: #1e293b;
+}
+
+.doctor-card__specialty {
+	margin: 0 0 1.5rem;
+	font-size: 1rem;
+	font-weight: 600;
+	color: #2563eb;
+	flex-grow: 1;
+}
+
+.doctor-card__footer {
+	width: 100%;
+	margin-top: auto;
+	padding-top: 1.5rem;
+	border-top: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.doctor-card__link {
+	display: block;
+	width: 100%;
+	padding: 0.875rem 1rem;
+	border-radius: 0.9rem;
+	background: #f8fafc;
+	color: #334155;
+	text-align: center;
+	text-decoration: none;
+	font-size: 0.95rem;
+	font-weight: 600;
+	transition:
+		background-color 180ms ease,
+		color 180ms ease,
+		transform 180ms ease;
+}
+
+.doctor-card__link:hover {
+	background: #0f172a;
+	color: #fff;
+}
+
+.department-card {
+	padding: 1.5rem;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+}
+
+.department-card__icon {
+	width: 4rem;
+	height: 4rem;
+	border-radius: 1rem;
+	background: rgba(59, 130, 246, 0.08);
+	margin-bottom: 1rem;
+}
+
+.department-card__icon svg {
+	width: 2rem;
+	height: 2rem;
+	color: #2563eb;
+}
+
+.department-card:hover .department-card__icon {
+	background: #2563eb;
+}
+
+.department-card:hover .department-card__icon svg {
+	color: #fff;
+}
+
+.department-card__title {
+	margin: 0;
+	font-size: 1.125rem;
+	line-height: 1.25;
+	font-weight: 700;
+	color: #1e293b;
+	transition: color 180ms ease;
+}
+
+.department-card:hover .department-card__title {
+	color: #2563eb;
+}
+
+@media (max-width: 640px) {
+	.doctor-card,
+	.department-card {
+		border-radius: 1.25rem;
+	}
+
+	.doctor-card {
+		padding: 1.25rem;
+	}
+
+	.department-card {
+		padding: 1.25rem;
+	}
+}

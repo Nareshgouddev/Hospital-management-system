@@ -7,11 +7,14 @@ const Navbar = () => {
   const [open, setOpen] = React.useState(false)
 
   const navItems = [
-    { name: 'Dashboard', to: '/dashboard' },
+    { name: 'Home', to: '/dashboard' },
+    { name: 'Departments', to: '/departments' },
     { name: 'Doctors', to: '/doctors' },
+    { name: 'Book Appointment', to: '/appointment' },
     { name: 'Appointments', to: '/appointments' },
-    { name: 'Patients', to: '/patients' },
-    { name: 'Settings', to: '/settings' },
+    { name: 'Services', to: '/services' },
+    { name: 'Contact', to: '/contact' },
+    { name: 'About', to: '/about' },
   ]
 
   return (
@@ -24,7 +27,7 @@ const Navbar = () => {
             className="navbar__logo"
           />
           <div className="navbar__titles">
-            <div className="navbar__title">WellFound</div>
+            <div className="navbar__title">Wellness Village</div>
             <div className="navbar__subtitle">Management System</div>
           </div>
         </Link>
@@ -36,8 +39,8 @@ const Navbar = () => {
             </Link>
           ))}
 
-          <Link to="/doctors/new" className="btn--primary">
-            Add Doctor
+          <Link to="/appointment" className="btn--primary">
+            Book Now
           </Link>
         </nav>
 
@@ -55,8 +58,8 @@ const Navbar = () => {
               {item.name}
             </Link>
           ))}
-          <Link to="/doctors/new" onClick={() => setOpen(false)} className="btn--primary">
-            Add Doctor
+          <Link to="/appointment" onClick={() => setOpen(false)} className="btn--primary">
+            Book Now
           </Link>
         </div>
       )}

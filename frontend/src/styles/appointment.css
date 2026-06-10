@@ -1,0 +1,297 @@
+.appointment-page {
+	padding-bottom: 6rem;
+}
+
+.appointment-page__hero {
+	background: #0f172a;
+	padding: 6rem 0;
+	text-align: center;
+}
+
+.appointment-page__hero-inner,
+.appointment-page__content {
+	max-width: 80rem;
+	margin: 0 auto;
+	padding: 0 1.5rem;
+}
+
+.appointment-page__hero-title {
+	margin: 0 0 1.5rem;
+	font-size: clamp(2.25rem, 4vw, 3.25rem);
+	line-height: 1.1;
+	font-weight: 700;
+	color: #fff;
+}
+
+.appointment-page__hero-text {
+	max-width: 42rem;
+	margin: 0 auto;
+	font-size: 1.125rem;
+	line-height: 1.75;
+	color: #cbd5e1;
+}
+
+.appointment-page__content {
+	margin-top: -3rem;
+}
+
+.appointment-page__grid {
+	display: grid;
+	grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+	gap: 3rem;
+}
+
+.appointment-page__sidebar {
+	display: grid;
+	gap: 2rem;
+}
+
+.appointment-page__info-card,
+.appointment-page__emergency-card,
+.appointment-form {
+	background: #fff;
+	border: 1px solid var(--border, #e5e4e7);
+	border-radius: 1.75rem;
+	box-shadow: 0 18px 40px rgba(15, 23, 42, 0.06);
+}
+
+.appointment-page__info-card,
+.appointment-page__emergency-card {
+	padding: 2rem;
+}
+
+.appointment-page__info-title,
+.appointment-page__emergency-title,
+.appointment-form__success-title {
+	margin: 0 0 1.5rem;
+	font-weight: 700;
+	color: #0f172a;
+}
+
+.appointment-page__info-title,
+.appointment-page__emergency-title {
+	font-size: 1.25rem;
+}
+
+.appointment-page__info-list {
+	display: grid;
+	gap: 1.5rem;
+}
+
+.appointment-page__info-item {
+	display: flex;
+	align-items: flex-start;
+	gap: 1rem;
+}
+
+.appointment-page__info-icon,
+.appointment-form__success-icon {
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 0.85rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: rgba(219, 234, 254, 0.75);
+	flex-shrink: 0;
+}
+
+.appointment-page__info-icon svg,
+.appointment-form__success-icon svg {
+	width: 1.25rem;
+	height: 1.25rem;
+	color: #2563eb;
+}
+
+.appointment-page__info-copy h4,
+.appointment-page__info-copy p {
+	margin: 0;
+}
+
+.appointment-page__info-copy h4 {
+	font-size: 1rem;
+	font-weight: 700;
+	color: #0f172a;
+	margin-bottom: 0.25rem;
+}
+
+.appointment-page__info-copy p {
+	font-size: 0.95rem;
+	line-height: 1.6;
+	color: #64748b;
+}
+
+.appointment-page__emergency-card {
+	background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
+	color: #fff;
+}
+
+.appointment-page__emergency-title,
+.appointment-page__emergency-text {
+	color: inherit;
+}
+
+.appointment-page__emergency-text {
+	margin: 0 0 1.5rem;
+	color: #dbeafe;
+	line-height: 1.65;
+}
+
+.appointment-page__emergency-link {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	width: 100%;
+	padding: 1rem 1.25rem;
+	border-radius: 0.95rem;
+	background: #fff;
+	color: #2563eb;
+	text-decoration: none;
+	font-weight: 700;
+	transition: background-color 180ms ease, transform 180ms ease;
+}
+
+.appointment-page__emergency-link:hover {
+	background: #eff6ff;
+}
+
+.appointment-form {
+	overflow: hidden;
+}
+
+.appointment-form__success {
+	padding: 3rem;
+	text-align: center;
+}
+
+.appointment-form__success-icon {
+	width: 5rem;
+	height: 5rem;
+	border-radius: 999px;
+	margin: 0 auto 1.5rem;
+	background: rgba(209, 250, 229, 0.8);
+}
+
+.appointment-form__success-icon svg {
+	width: 2.5rem;
+	height: 2.5rem;
+	color: #059669;
+}
+
+.appointment-form__success-title {
+	font-size: 1.5rem;
+	margin-bottom: 0.5rem;
+}
+
+.appointment-form__success-text {
+	margin: 0;
+	color: #64748b;
+}
+
+.appointment-form__body {
+	padding: 2rem;
+	display: grid;
+	gap: 1.5rem;
+}
+
+.appointment-form__grid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 1.5rem;
+}
+
+.appointment-form__field {
+	display: grid;
+	gap: 0.5rem;
+}
+
+.appointment-form__label {
+	font-size: 0.95rem;
+	font-weight: 600;
+	color: #0f172a;
+}
+
+.appointment-form__input,
+.appointment-form__select,
+.appointment-form__textarea {
+	width: 100%;
+	border: 1px solid #cbd5e1;
+	border-radius: 0.9rem;
+	background: #fff;
+	padding: 0.9rem 1rem;
+	font: inherit;
+	color: #0f172a;
+	transition: border-color 180ms ease, box-shadow 180ms ease;
+	box-sizing: border-box;
+}
+
+.appointment-form__input:focus,
+.appointment-form__select:focus,
+.appointment-form__textarea:focus {
+	outline: none;
+	border-color: #2563eb;
+	box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.appointment-form__select:disabled {
+	background: #f8fafc;
+	color: #94a3b8;
+}
+
+.appointment-form__textarea {
+	min-height: 7rem;
+	resize: vertical;
+}
+
+.appointment-form__submit {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	width: 100%;
+	padding: 1rem 1.25rem;
+	border: 0;
+	border-radius: 0.95rem;
+	background: #2563eb;
+	color: #fff;
+	font: inherit;
+	font-weight: 700;
+	cursor: pointer;
+	transition: transform 180ms ease, background-color 180ms ease;
+}
+
+.appointment-form__submit:hover {
+	background: #1d4ed8;
+}
+
+@media (max-width: 1024px) {
+	.appointment-page__grid {
+		grid-template-columns: 1fr;
+	}
+
+	.appointment-page__content {
+		margin-top: -2rem;
+	}
+}
+
+@media (max-width: 768px) {
+	.appointment-page__hero {
+		padding: 4.5rem 0;
+	}
+
+	.appointment-form__grid {
+		grid-template-columns: 1fr;
+	}
+
+	.appointment-page__info-card,
+	.appointment-page__emergency-card,
+	.appointment-form__body,
+	.appointment-form__success {
+		padding: 1.5rem;
+	}
+
+	.appointment-page__content {
+		padding: 0 1rem;
+	}
+}
