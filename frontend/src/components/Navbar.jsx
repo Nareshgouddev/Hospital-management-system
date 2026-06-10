@@ -22,7 +22,7 @@ const Navbar = () => {
       <div className="navbar__inner">
         <Link to="/dashboard" className="navbar__brand">
           <img
-            src="logo.jpeg"
+            src="/logo.jpeg"
             alt="Q9 Logo"
             className="navbar__logo"
           />

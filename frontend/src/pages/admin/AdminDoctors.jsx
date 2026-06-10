@@ -1,6 +1,6 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
 import { doctors as initialDoctors } from '../../data/doctors'
+import { Plus, Pencil, Trash2, X } from 'lucide-react'
 
 export default function AdminDoctors(){
   const storageKey = 'admin:doctors'
@@ -35,45 +35,65 @@ export default function AdminDoctors(){
     setForm({name:'',specialty:'',email:''})
   }
 
-  function startEdit(d){ setEditingId(d.id); setForm({ name:d.name||'', specialty:d.specialty||'', email:d.email||'' }) }
+  function startEdit(d){ setEditingId(d.id); setForm({ name:d.name||'', specialty:d.specialty||d.specialization||'', email:d.email||'' }) }
   function cancelEdit(){ setEditingId(null); setForm({name:'',specialty:'',email:''}) }
   function deleteDoctor(id){ setDoctors(prev=>prev.filter(d=>d.id!==id)) }
 
   return (
-    <div>
-      <h2>Doctors</h2>
-      <form onSubmit={addDoctor} style={{display:'flex',gap:'0.5rem',marginBottom:'1rem'}}>
-        <input placeholder="Name" value={form.name} onChange={e=>setForm({...form,name:e.target.value})} />
-        <input placeholder="Specialty" value={form.specialty} onChange={e=>setForm({...form,specialty:e.target.value})} />
-        <input placeholder="Email" value={form.email} onChange={e=>setForm({...form,email:e.target.value})} />
-        <button className="btn">Add</button>
-      </form>
-
-      <div className="table table--four">
-        <div className="tr header"><div className="td">Name</div><div className="td">Specialty</div><div className="td">Email</div></div>
-        {doctors.map(d=> (
-          <div className="tr" key={d.id}>
-            {editingId === d.id ? (
-              <>
-                <div className="td"><input value={form.name} onChange={e=>setForm({...form,name:e.target.value})} /></div>
-                <div className="td"><input value={form.specialty} onChange={e=>setForm({...form,specialty:e.target.value})} /></div>
-                <div className="td"><input value={form.email} onChange={e=>setForm({...form,email:e.target.value})} /></div>
-                <div className="td"><button className="btn" onClick={addDoctor}>Save</button> <button className="btn muted" onClick={cancelEdit}>Cancel</button></div>
-              </>
-            ) : (
-              <>
-                <div className="td">{d.name}</div>
-                <div className="td">{d.specialty}</div>
-                <div className="td">{d.email||'n/a'}</div>
-                <div className="td">
-                  <button className="btn" onClick={()=>startEdit(d)}>Edit</button>
-                  <button className="btn danger" onClick={()=>deleteDoctor(d.id)}>Delete</button>
-                </div>
-              </>
-            )}
-          </div>
-        ))}
+    <>
+      <div className="admin-page-header">
+        <h2>Manage Doctors</h2>
+        <p>Add, edit, or remove doctors from the hospital directory.</p>
       </div>
-    </div>
+
+      <div className="admin-section">
+        <form onSubmit={addDoctor} className="admin-form-row">
+          <input placeholder="Doctor Name" value={form.name} onChange={e=>setForm({...form,name:e.target.value})} required />
+          <input placeholder="Specialty" value={form.specialty} onChange={e=>setForm({...form,specialty:e.target.value})} />
+          <input placeholder="Email" value={form.email} onChange={e=>setForm({...form,email:e.target.value})} />
+          <button className="btn" type="submit">
+            {editingId ? 'Update' : 'Add Doctor'}
+          </button>
+          {editingId && <button type="button" className="btn muted" onClick={cancelEdit}>Cancel</button>}
+        </form>
+
+        <div className="table table--four">
+          <div className="tr header">
+            <div className="td">Name</div>
+            <div className="td">Specialty</div>
+            <div className="td">Email</div>
+            <div className="td">Actions</div>
+          </div>
+          {doctors.map(d=> (
+            <div className="tr" key={d.id}>
+              {editingId === d.id ? (
+                <>
+                  <div className="td"><input value={form.name} onChange={e=>setForm({...form,name:e.target.value})} /></div>
+                  <div className="td"><input value={form.specialty} onChange={e=>setForm({...form,specialty:e.target.value})} /></div>
+                  <div className="td"><input value={form.email} onChange={e=>setForm({...form,email:e.target.value})} /></div>
+                  <div className="td">
+                    <button className="btn" onClick={addDoctor}>Save</button>
+                    <button className="btn muted" onClick={cancelEdit} style={{marginLeft:4}}>Cancel</button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="td">{d.name}</div>
+                  <div className="td">{d.specialty || d.specialization || '—'}</div>
+                  <div className="td">{d.email||'—'}</div>
+                  <div className="td">
+                    <button className="btn" onClick={()=>startEdit(d)} style={{marginRight:4}}>Edit</button>
+                    <button className="btn danger" onClick={()=>deleteDoctor(d.id)}>Delete</button>
+                  </div>
+                </>
+              )}
+            </div>
+          ))}
+          {doctors.length === 0 && (
+            <div className="tr"><div className="td" style={{gridColumn:'1/-1', textAlign:'center', color:'#94a3b8'}}>No doctors found. Add one above.</div></div>
+          )}
+        </div>
+      </div>
+    </>
   )
 }

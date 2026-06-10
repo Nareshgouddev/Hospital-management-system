@@ -1,6 +1,6 @@
 import React from 'react'
 
-const initial = [ { id:1, patient:'John Smith', time: '10:00 AM', doctor:'Dr. A' } ]
+const initial = [ { id:1, patient:'John Smith', time: '10:00 AM', doctor:'Dr. Ana Ray' } ]
 
 export default function AdminAppointments(){
   const storageKey = 'admin:appointments'
@@ -14,7 +14,6 @@ export default function AdminAppointments(){
     function onEvent(e){
       const ev = e.detail
       if (ev && ev.type === 'event'){
-        // if event looks like appointment, add it
         if ((ev.title && ev.title.toLowerCase().includes('appointment')) || ev.payload?.patient) {
           setItems(prev=>[{ id: Date.now(), patient: ev.payload?.patient || 'Anonymous', time: ev.payload?.time || new Date().toLocaleTimeString(), doctor: ev.payload?.doctor || '—' }, ...prev])
         }
@@ -42,39 +41,60 @@ export default function AdminAppointments(){
   function deleteItem(id){ setItems(prev=>prev.filter(it=>it.id!==id)) }
 
   return (
-    <div>
-      <h2>Appointments</h2>
-      <form onSubmit={add} style={{display:'flex',gap:8, marginBottom:12}}>
-        <input placeholder="Patient" value={form.patient} onChange={e=>setForm({...form,patient:e.target.value})} />
-        <input placeholder="Time" value={form.time} onChange={e=>setForm({...form,time:e.target.value})} />
-        <input placeholder="Doctor" value={form.doctor} onChange={e=>setForm({...form,doctor:e.target.value})} />
-        <button className="btn">Add</button>
-      </form>
-      <div className="table table--four">
-        <div className="tr header"><div className="td">Patient</div><div className="td">Time</div><div className="td">Doctor</div></div>
-        {items.map(it=> (
-          <div className="tr" key={it.id}>
-            {editingId === it.id ? (
-              <>
-                <div className="td"><input value={form.patient} onChange={e=>setForm({...form,patient:e.target.value})} /></div>
-                <div className="td"><input value={form.time} onChange={e=>setForm({...form,time:e.target.value})} /></div>
-                <div className="td"><input value={form.doctor} onChange={e=>setForm({...form,doctor:e.target.value})} /></div>
-                <div className="td"><button className="btn" onClick={add}>Save</button> <button className="btn muted" onClick={cancelEdit}>Cancel</button></div>
-              </>
-            ) : (
-              <>
-                <div className="td">{it.patient}</div>
-                <div className="td">{it.time}</div>
-                <div className="td">{it.doctor}</div>
-                <div className="td">
-                  <button className="btn" onClick={()=>startEdit(it)}>Edit</button>
-                  <button className="btn danger" onClick={()=>deleteItem(it.id)}>Delete</button>
-                </div>
-              </>
-            )}
-          </div>
-        ))}
+    <>
+      <div className="admin-page-header">
+        <h2>Manage Appointments</h2>
+        <p>View, add, edit, or cancel patient appointments.</p>
       </div>
-    </div>
+
+      <div className="admin-section">
+        <form onSubmit={add} className="admin-form-row">
+          <input placeholder="Patient Name" value={form.patient} onChange={e=>setForm({...form,patient:e.target.value})} required />
+          <input placeholder="Time" value={form.time} onChange={e=>setForm({...form,time:e.target.value})} required />
+          <input placeholder="Doctor" value={form.doctor} onChange={e=>setForm({...form,doctor:e.target.value})} required />
+          <button className="btn" type="submit">
+            {editingId ? 'Update' : 'Add Appointment'}
+          </button>
+          {editingId && <button type="button" className="btn muted" onClick={cancelEdit}>Cancel</button>}
+        </form>
+
+        <div className="table table--four">
+          <div className="tr header">
+            <div className="td">Patient</div>
+            <div className="td">Time</div>
+            <div className="td">Doctor</div>
+            <div className="td">Actions</div>
+          </div>
+          {items.map(it=> (
+            <div className="tr" key={it.id}>
+              {editingId === it.id ? (
+                <>
+                  <div className="td"><input value={form.patient} onChange={e=>setForm({...form,patient:e.target.value})} /></div>
+                  <div className="td"><input value={form.time} onChange={e=>setForm({...form,time:e.target.value})} /></div>
+                  <div className="td"><input value={form.doctor} onChange={e=>setForm({...form,doctor:e.target.value})} /></div>
+                  <div className="td">
+                    <button className="btn" onClick={add}>Save</button>
+                    <button className="btn muted" onClick={cancelEdit} style={{marginLeft:4}}>Cancel</button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="td">{it.patient}</div>
+                  <div className="td">{it.time}</div>
+                  <div className="td">{it.doctor}</div>
+                  <div className="td">
+                    <button className="btn" onClick={()=>startEdit(it)} style={{marginRight:4}}>Edit</button>
+                    <button className="btn danger" onClick={()=>deleteItem(it.id)}>Delete</button>
+                  </div>
+                </>
+              )}
+            </div>
+          ))}
+          {items.length === 0 && (
+            <div className="tr"><div className="td" style={{gridColumn:'1/-1', textAlign:'center', color:'#94a3b8'}}>No appointments yet.</div></div>
+          )}
+        </div>
+      </div>
+    </>
   )
 }
