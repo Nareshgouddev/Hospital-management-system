@@ -24,7 +24,7 @@ export default function Hero() {
               <p className="hero-kicker">About Our Hospital</p>
               <h1 className="hero-title">
                 Welcome to <br />
-                <span className="hero-accent">Q9 Multy Speciality Hospital</span>
+                <span className="hero-accent">Wellness village Speciality Hospital</span>
               </h1>
 
               <p className="hero-subtext">
