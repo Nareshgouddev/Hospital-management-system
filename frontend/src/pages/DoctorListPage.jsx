@@ -1,4 +1,4 @@
-import { doctors } from '../data/doctors';
+import { doctors as initialDoctors } from '../data/doctors';
 import DoctorCard from '../components/DoctorCard';
 import { motion } from 'framer-motion';
 import { Search } from 'lucide-react';
@@ -7,6 +7,14 @@ import '../styles/pages.css';
 
 export default function Doctors() {
   const [searchTerm, setSearchTerm] = React.useState('');
+  const [doctors, setDoctors] = React.useState(initialDoctors);
+
+  React.useEffect(() => {
+    try {
+      const raw = localStorage.getItem('admin:doctors');
+      if (raw) setDoctors(JSON.parse(raw));
+    } catch (e) {}
+  }, []);
 
   const filteredDoctors = doctors.filter(doc => 
     doc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||

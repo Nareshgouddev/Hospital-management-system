@@ -1,9 +1,19 @@
-import { departments } from '../data/departments';
+import { departments as initialDepartments } from '../data/departments';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import '../styles/pages.css';
 
 export default function Departments() {
+  const [departments, setDepartments] = React.useState(initialDepartments);
+
+  React.useEffect(() => {
+    try {
+      const raw = localStorage.getItem('admin:departments');
+      if (raw) setDepartments(JSON.parse(raw));
+    } catch (e) {}
+  }, []);
+
   return (
     <div className="department-page">
 

@@ -1,11 +1,24 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { departments } from '../data/departments';
-import { doctors } from '../data/doctors';
+import { departments as initialDepartments } from '../data/departments';
+import { doctors as initialDoctors } from '../data/doctors';
 import { CheckCircle2, Send } from 'lucide-react';
 import '../styles/appointment.css';
 
 export default function AppointmentForm() {
+  const [departments, setDepartments] = React.useState(initialDepartments);
+  const [doctors, setDoctors] = React.useState(initialDoctors);
+
+  React.useEffect(() => {
+    try {
+      const rawDept = localStorage.getItem('admin:departments');
+      if (rawDept) setDepartments(JSON.parse(rawDept));
+      
+      const rawDoc = localStorage.getItem('admin:doctors');
+      if (rawDoc) setDoctors(JSON.parse(rawDoc));
+    } catch (e) {}
+  }, []);
+
   const [isSubmitted, setIsSubmitted] = React.useState(false);
   const [formKey, setFormKey] = React.useState(0);
 
@@ -29,14 +42,38 @@ export default function AppointmentForm() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    console.log('Appointment Data:', formData);
+    const selectedDoc = doctors.find(d => d.id === formData.doctor);
+    const doctorName = selectedDoc ? selectedDoc.name : formData.doctor;
+
+    let appointments = [];
+    try {
+      const raw = localStorage.getItem('admin:appointments');
+      if (raw) {
+        appointments = JSON.parse(raw);
+      } else {
+        appointments = [{ id:1, patient:'John Smith', time: '10:00 AM', doctor:'Dr. Ana Ray' }];
+      }
+    } catch (err) {}
+
+    const newAppointment = {
+      id: Date.now(),
+      patient: formData.name,
+      time: formData.time,
+      doctor: doctorName
+    };
+
+    appointments.unshift(newAppointment);
+
+    try {
+      localStorage.setItem('admin:appointments', JSON.stringify(appointments));
+    } catch (err) {}
 
     setIsSubmitted(true);
 
     setTimeout(() => {
       setIsSubmitted(false);
 
-      // 🔥 force new form
+      // force new form
       setFormKey(prev => prev + 1);
 
       setFormData({
@@ -50,7 +87,6 @@ export default function AppointmentForm() {
         time: '',
         message: ''
       });
-
     }, 3000);
   };
 

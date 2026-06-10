@@ -7,6 +7,7 @@ export default function AdminDepartments(){
     try{ const raw = localStorage.getItem(storageKey); return raw ? JSON.parse(raw) : (initial || []) }catch(e){ return (initial||[]) }
   })
   const [name, setName] = React.useState('')
+  const [description, setDescription] = React.useState('')
   const [editingId, setEditingId] = React.useState(null)
 
   React.useEffect(()=>{
@@ -26,16 +27,17 @@ export default function AdminDepartments(){
     e.preventDefault()
     if (!name.trim()) return
     if (editingId){
-      setItems(prev=>prev.map(it=> it.id===editingId ? { ...it, title:name } : it))
+      setItems(prev=>prev.map(it=> it.id===editingId ? { ...it, title:name, description } : it))
       setEditingId(null)
     } else {
-      setItems(prev=>[{ id: Date.now(), title:name, description:'' }, ...prev])
+      setItems(prev=>[{ id: Date.now(), title:name, description }, ...prev])
     }
     setName('')
+    setDescription('')
   }
 
-  function startEdit(it){ setEditingId(it.id); setName(it.title||'') }
-  function cancelEdit(){ setEditingId(null); setName('') }
+  function startEdit(it){ setEditingId(it.id); setName(it.title||''); setDescription(it.description||'') }
+  function cancelEdit(){ setEditingId(null); setName(''); setDescription('') }
   function deleteItem(id){ setItems(prev=>prev.filter(it=>it.id!==id)) }
 
   return (
@@ -51,6 +53,12 @@ export default function AdminDepartments(){
             placeholder="Department name"
             value={name}
             onChange={e=>setName(e.target.value)}
+            required
+          />
+          <input
+            placeholder="Description"
+            value={description}
+            onChange={e=>setDescription(e.target.value)}
             required
           />
           <button className="btn" type="submit">
@@ -69,8 +77,8 @@ export default function AdminDepartments(){
             <div className="tr" key={it.id}>
               {editingId === it.id ? (
                 <>
-                  <div className="td"><input value={name} onChange={e=>setName(e.target.value)} /></div>
-                  <div className="td">{it.description||'—'}</div>
+                  <div className="td"><input value={name} onChange={e=>setName(e.target.value)} required /></div>
+                  <div className="td"><input value={description} onChange={e=>setDescription(e.target.value)} required /></div>
                   <div className="td">
                     <button className="btn" onClick={add}>Save</button>
                     <button className="btn muted" onClick={cancelEdit} style={{marginLeft:4}}>Cancel</button>
