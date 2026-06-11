@@ -33,7 +33,7 @@ export default function Hero() {
 
               <div className="hero-ctas">
                 <Link to="/appointment" className="hero-cta hero-cta--primary">Book Appointment <Calendar /></Link>
-                <a href="tel:+917702021224" className="hero-cta hero-cta--secondary">Emergency Contact <Phone /></a>
+                <a href="tel:+919398997732" className="hero-cta hero-cta--secondary">Emergency Contact <Phone /></a>
               </div>
 
             </motion.div>

@@ -1,6 +1,6 @@
 import React from 'react'
 import '../styles/admin.css'
-import AdminRealtimeFeed from '../components/AdminRealtimeFeed'
+// import AdminRealtimeFeed from '../components/AdminRealtimeFeed'
 import useRealtime from '../hooks/useRealtime'
 import { doctors } from '../data/doctors'
 import { departments } from '../data/department'
@@ -86,9 +86,9 @@ export default function AdminDashboard(){
             </div>
           </section>
         </div>
-
+        
         <div style={{width:320, flexShrink:0}}>
-          <AdminRealtimeFeed events={events} />
+          {/* <AdminRealtimeFeed events={events} /> */}
           <div className="connection-status">
             <div className="connection-status__label">Server Status</div>
             <div className={`connection-status__value connection-status__value--${connected ? 'connected' : 'disconnected'}`}>

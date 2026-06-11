@@ -28,7 +28,7 @@ export default function useRealtime({ url } = {}) {
       mockRef.current = setInterval(() => {
         const evt = { type: 'event', id: Date.now(), title: 'New appointment', payload: { patient: `P${Math.floor(Math.random()*9999)}`, time: new Date().toLocaleTimeString() } }
         handleMessage(evt)
-        const s = { type: 'stats', payload: { appointments: Math.floor(Math.random()*500) } }
+        const s = { type: 'stats', payload: {} }
         handleMessage(s)
       }, 4000)
     }
