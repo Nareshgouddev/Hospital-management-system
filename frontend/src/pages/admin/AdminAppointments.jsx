@@ -1,103 +1,199 @@
 import React from 'react'
+import { getAllAppointments, updateAppointmentStatus, deleteAppointment } from '../../api/hospitalApi'
 
-const initial = [ { id:1, patient:'John Smith', time: '10:00 AM', doctor:'Dr. Ana Ray' } ]
+const STATUS_OPTIONS = ['Pending', 'Confirmed', 'Cancelled', 'Completed']
 
-export default function AdminAppointments(){
-  const storageKey = 'admin:appointments'
-  const [items, setItems] = React.useState(()=>{
-    try{ const raw = localStorage.getItem(storageKey); return raw ? JSON.parse(raw) : initial }catch(e){ return initial }
-  })
-  let session = {}
-  try { session = JSON.parse(localStorage.getItem('admin:session') || '{}') } catch(e){}
+const STATUS_COLORS = {
+  Pending: '#f59e0b',
+  Confirmed: '#10b981',
+  Cancelled: '#ef4444',
+  Completed: '#6366f1',
+}
+
+export default function AdminAppointments() {
+  const [items, setItems] = React.useState([])
+  const [loading, setLoading] = React.useState(true)
+  const [error, setError] = React.useState('')
+  const [updating, setUpdating] = React.useState(null) // appointmentId being updated
+  const [deleting, setDeleting] = React.useState(null) // appointmentId being deleted
+  const [filterStatus, setFilterStatus] = React.useState('All')
+
+  // Read session once — stable for the lifetime of this component
+  const session = React.useMemo(() => {
+    try { return JSON.parse(localStorage.getItem('admin:session') || '{}') } catch { return {} }
+  }, [])
   const isDoctor = session.role === 'Doctor'
 
-  const [form, setForm] = React.useState({ patient:'', time:'', doctor: isDoctor ? session.id : '' })
-  const [editingId, setEditingId] = React.useState(null)
+  React.useEffect(() => {
+    fetchAppointments()
+  }, [])
 
-  React.useEffect(()=>{
-    function onEvent(e){
-      const ev = e.detail
-      if (ev && ev.type === 'event'){
-        if ((ev.title && ev.title.toLowerCase().includes('appointment')) || ev.payload?.patient) {
-          setItems(prev=>[{ id: Date.now(), patient: ev.payload?.patient || 'Anonymous', time: ev.payload?.time || new Date().toLocaleTimeString(), doctor: ev.payload?.doctor || '—' }, ...prev])
-        }
-      }
+  async function fetchAppointments() {
+    setLoading(true)
+    setError('')
+    try {
+      const data = await getAllAppointments()
+      setItems(data)
+    } catch (err) {
+      setError('Could not load appointments: ' + err.message)
+    } finally {
+      setLoading(false)
     }
-    window.addEventListener('realtime:event', onEvent)
-    return ()=> window.removeEventListener('realtime:event', onEvent)
-  },[])
-
-  React.useEffect(()=>{ try{ localStorage.setItem(storageKey, JSON.stringify(items)) }catch(e){} },[items])
-
-  function add(e){
-    e.preventDefault()
-    if (editingId){
-      setItems(prev=>prev.map(it=> it.id===editingId ? { ...it, ...form } : it))
-      setEditingId(null)
-    } else {
-      setItems(prev=>[{ id: Date.now(), ...form, doctor: isDoctor ? session.id : form.doctor }, ...prev])
-    }
-    setForm({ patient:'', time:'', doctor: isDoctor ? session.id : '' })
   }
 
-  function startEdit(it){ setEditingId(it.id); setForm({ patient:it.patient||'', time:it.time||'', doctor:it.doctor||'' }) }
-  function cancelEdit(){ setEditingId(null); setForm({ patient:'', time:'', doctor: isDoctor ? session.id : '' }) }
-  function deleteItem(id){ setItems(prev=>prev.filter(it=>it.id!==id)) }
+  async function handleStatusChange(id, newStatus) {
+    setUpdating(id)
+    try {
+      const updated = await updateAppointmentStatus(id, newStatus)
+      setItems(prev => prev.map(it => it.appointmentId === id ? updated : it))
+    } catch (err) {
+      setError('Status update failed: ' + err.message)
+    } finally {
+      setUpdating(null)
+    }
+  }
+
+  async function handleDelete(id) {
+    if (!window.confirm('Delete this appointment? This cannot be undone.')) return
+    setDeleting(id)
+    try {
+      await deleteAppointment(id)
+      setItems(prev => prev.filter(it => it.appointmentId !== id))
+    } catch (err) {
+      setError('Delete failed: ' + err.message)
+    } finally {
+      setDeleting(null)
+    }
+  }
+
+  // Doctors only see appointments assigned to them — matched by doctor.adminId or doctorName vs session.id
+  let visibleItems = isDoctor
+    ? items.filter(it =>
+        it.doctor &&
+        it.doctor.doctorName &&
+        it.doctor.doctorName.toLowerCase() === (session.id || '').toLowerCase()
+      )
+    : items
+
+  // Apply status filter
+  if (filterStatus !== 'All') {
+    visibleItems = visibleItems.filter(it => it.status === filterStatus)
+  }
+
+  function formatDate(dateStr) {
+    if (!dateStr) return '—'
+    try { return new Date(dateStr).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) } catch { return dateStr }
+  }
+
+  function formatTime(timeStr) {
+    if (!timeStr) return '—'
+    return timeStr.slice(0, 5) // HH:MM
+  }
+
+  const counts = STATUS_OPTIONS.reduce((acc, s) => {
+    acc[s] = items.filter(it => it.status === s).length
+    return acc
+  }, {})
 
   return (
     <>
       <div className="admin-page-header">
         <h2>Manage Appointments</h2>
-        <p>View, add, edit, or cancel patient appointments.</p>
+        <p>View and update patient appointment status.</p>
       </div>
 
-      <div className="admin-section">
-        <form onSubmit={add} className="admin-form-row">
-          <input placeholder="Patient Name" value={form.patient} onChange={e=>setForm({...form,patient:e.target.value})} required />
-          <input placeholder="Time" value={form.time} onChange={e=>setForm({...form,time:e.target.value})} required />
-          {!isDoctor && <input placeholder="Doctor" value={form.doctor} onChange={e=>setForm({...form,doctor:e.target.value})} required />}
-          <button className="btn" type="submit">
-            {editingId ? 'Update' : 'Add Appointment'}
-          </button>
-          {editingId && <button type="button" className="btn muted" onClick={cancelEdit}>Cancel</button>}
-        </form>
-
-        <div className="table table--four">
-          <div className="tr header">
-            <div className="td">Patient</div>
-            <div className="td">Time</div>
-            <div className="td">Doctor</div>
-            <div className="td">Actions</div>
-          </div>
-          {(isDoctor ? items.filter(it => it.doctor && it.doctor.toLowerCase().includes(session.id.toLowerCase())) : items).map(it=> (
-            <div className="tr" key={it.id}>
-              {editingId === it.id ? (
-                <>
-                  <div className="td"><input value={form.patient} onChange={e=>setForm({...form,patient:e.target.value})} /></div>
-                  <div className="td"><input value={form.time} onChange={e=>setForm({...form,time:e.target.value})} /></div>
-                  <div className="td">{isDoctor ? it.doctor : <input value={form.doctor} onChange={e=>setForm({...form,doctor:e.target.value})} />}</div>
-                  <div className="td">
-                    <button className="btn" onClick={add}>Save</button>
-                    <button className="btn muted" onClick={cancelEdit} style={{marginLeft:4}}>Cancel</button>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="td">{it.patient}</div>
-                  <div className="td">{it.time}</div>
-                  <div className="td">{it.doctor}</div>
-                  <div className="td">
-                    <button className="btn" onClick={()=>startEdit(it)} style={{marginRight:4}}>Edit</button>
-                    <button className="btn danger" onClick={()=>deleteItem(it.id)}>Delete</button>
-                  </div>
-                </>
-              )}
-            </div>
+      {/* Status summary chips */}
+      {!isDoctor && (
+        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
+          {['All', ...STATUS_OPTIONS].map(s => (
+            <button
+              key={s}
+              onClick={() => setFilterStatus(s)}
+              style={{
+                padding: '4px 14px',
+                borderRadius: '999px',
+                border: `1.5px solid ${s === 'All' ? '#64748b' : STATUS_COLORS[s] || '#64748b'}`,
+                background: filterStatus === s ? (s === 'All' ? '#64748b' : STATUS_COLORS[s]) : 'transparent',
+                color: filterStatus === s ? '#fff' : '#64748b',
+                cursor: 'pointer',
+                fontSize: '0.82rem',
+                fontWeight: 600,
+                transition: 'all .15s',
+              }}
+            >
+              {s}{s !== 'All' && counts[s] !== undefined ? ` (${counts[s]})` : ''}
+            </button>
           ))}
-          {(isDoctor ? items.filter(it => it.doctor && it.doctor.toLowerCase().includes(session.id.toLowerCase())) : items).length === 0 && (
-            <div className="tr"><div className="td" style={{gridColumn:'1/-1', textAlign:'center', color:'#94a3b8'}}>No appointments yet.</div></div>
-          )}
         </div>
+      )}
+
+      {error && <div className="admin-auth-card__error" style={{ margin: '0 0 1rem' }}>{error}</div>}
+
+      <div className="admin-section">
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.75rem' }}>
+          <button className="btn btn-outline" onClick={fetchAppointments}>↻ Refresh</button>
+        </div>
+
+        {loading ? (
+          <p style={{ color: '#94a3b8', padding: '1rem' }}>Loading appointments...</p>
+        ) : (
+          <div className="table" style={{ '--cols': 8 }}>
+            <div className="tr header">
+              <div className="td">Patient</div>
+              <div className="td">Phone</div>
+              <div className="td">Doctor</div>
+              <div className="td">Date</div>
+              <div className="td">Time</div>
+              <div className="td">Message</div>
+              <div className="td">Status</div>
+              <div className="td">Actions</div>
+            </div>
+            {visibleItems.map(it => (
+              <div className="tr" key={it.appointmentId}>
+                <div className="td">{it.patientFullName || '—'}</div>
+                <div className="td">{it.phoneNumber || '—'}</div>
+                <div className="td">{it.doctor?.doctorName || '—'}</div>
+                <div className="td">{formatDate(it.appointmentDate)}</div>
+                <div className="td">{formatTime(it.appointmentTime)}</div>
+                <div className="td" title={it.message}>{it.message ? it.message.slice(0, 30) + (it.message.length > 30 ? '…' : '') : '—'}</div>
+                <div className="td">
+                  <select
+                    value={it.status || 'Pending'}
+                    disabled={updating === it.appointmentId}
+                    onChange={e => handleStatusChange(it.appointmentId, e.target.value)}
+                    className="admin-auth-field__select"
+                    style={{
+                      fontSize: '0.8rem',
+                      padding: '4px 6px',
+                      borderLeft: `3px solid ${STATUS_COLORS[it.status] || '#64748b'}`,
+                    }}
+                  >
+                    {STATUS_OPTIONS.map(s => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="td">
+                  <button
+                    className="btn danger"
+                    style={{ fontSize: '0.75rem', padding: '3px 10px' }}
+                    disabled={deleting === it.appointmentId}
+                    onClick={() => handleDelete(it.appointmentId)}
+                  >
+                    {deleting === it.appointmentId ? '…' : 'Delete'}
+                  </button>
+                </div>
+              </div>
+            ))}
+            {visibleItems.length === 0 && (
+              <div className="tr">
+                <div className="td" style={{ gridColumn: '1/-1', textAlign: 'center', color: '#94a3b8' }}>
+                  No appointments found{filterStatus !== 'All' ? ` with status "${filterStatus}"` : ''}.
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </>
   )

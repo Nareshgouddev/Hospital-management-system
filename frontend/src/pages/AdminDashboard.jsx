@@ -1,9 +1,9 @@
 import React from 'react'
 import '../styles/admin.css'
-// import AdminRealtimeFeed from '../components/AdminRealtimeFeed'
 import useRealtime from '../hooks/useRealtime'
-import { doctors } from '../data/doctors'
-import { departments } from '../data/department'
+import { getAllDoctors, getAllDepartments, getAllAppointments } from '../api/hospitalApi'
+import { doctors as staticDoctors } from '../data/doctors'
+import { departments as staticDepts } from '../data/departments'
 import { Users, Building2, Activity, CalendarCheck } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
@@ -12,34 +12,37 @@ const services = [
 ]
 
 export default function AdminDashboard(){
-  const { connected, events, stats: liveStats } = useRealtime()
-  const [localStats, setLocalStats] = React.useState({
-    doctors: doctors.length,
-    departments: departments.length,
-    services: services.length,
-    appointments: 128
-  })
+  const { connected } = useRealtime()
 
-  React.useEffect(()=>{
-    if (liveStats && Object.keys(liveStats).length) {
-      setLocalStats(prev => ({ ...prev, ...liveStats }))
-    }
-  }, [liveStats])
+  const [doctors, setDoctors] = React.useState(staticDoctors)
+  const [departments, setDepartments] = React.useState(staticDepts)
+  const [appointmentCount, setAppointmentCount] = React.useState(0)
+  const [loading, setLoading] = React.useState(true)
+
+  React.useEffect(() => {
+    Promise.allSettled([
+      getAllDoctors(),
+      getAllDepartments(),
+      getAllAppointments(),
+    ]).then(([docRes, deptRes, apptRes]) => {
+      if (docRes.status === 'fulfilled') setDoctors(docRes.value)
+      if (deptRes.status === 'fulfilled') setDepartments(deptRes.value)
+      if (apptRes.status === 'fulfilled') setAppointmentCount(apptRes.value.length)
+      setLoading(false)
+    })
+  }, [])
 
   let session = {}
   try { session = JSON.parse(localStorage.getItem('admin:session') || '{}') } catch(e){}
   const isDoctor = session.role === 'Doctor'
 
   const statCards = isDoctor ? [
-    { label: 'My Appointments', value: 8, icon: CalendarCheck, color: '#3b82f6' },
-    { label: 'My Patients', value: 24, icon: Users, color: '#10b981' },
-    { label: 'Services', value: localStats.services, icon: Activity, color: '#8b5cf6' },
-    { label: 'Pending Reports', value: 3, icon: Activity, color: '#f59e0b' },
+    { label: 'Services', value: services.length, icon: Activity, color: '#8b5cf6' },
   ] : [
-    { label: 'Doctors', value: localStats.doctors, icon: Users, color: '#3b82f6' },
-    { label: 'Departments', value: localStats.departments, icon: Building2, color: '#10b981' },
-    { label: 'Services', value: localStats.services, icon: Activity, color: '#8b5cf6' },
-    { label: 'Appointments', value: localStats.appointments, icon: CalendarCheck, color: '#f59e0b' },
+    { label: 'Doctors', value: loading ? '…' : doctors.length, icon: Users, color: '#3b82f6' },
+    { label: 'Departments', value: loading ? '…' : departments.length, icon: Building2, color: '#10b981' },
+    { label: 'Services', value: services.length, icon: Activity, color: '#8b5cf6' },
+    { label: 'Appointments', value: loading ? '…' : appointmentCount, icon: CalendarCheck, color: '#f59e0b' },
   ]
 
   return (
@@ -63,14 +66,14 @@ export default function AdminDashboard(){
               <div className="table">
                 <div className="tr header">
                   <div className="td">Name</div>
-                  <div className="td">Specialty</div>
-                  <div className="td">Department</div>
+                  <div className="td">Speciality</div>
+                  <div className="td">Email</div>
                 </div>
-                {doctors.slice(0,6).map(d=> (
-                  <div className="tr" key={d.id}>
-                    <div className="td">{d.name}</div>
-                    <div className="td">{d.specialization || '—'}</div>
-                    <div className="td">{d.department || '—'}</div>
+                {doctors.slice(0, 6).map((d, i) => (
+                  <div className="tr" key={d.doctorId ?? d.id ?? i}>
+                    <div className="td">{d.doctorName ?? d.name}</div>
+                    <div className="td">{d.speciality ?? d.specialization ?? '—'}</div>
+                    <div className="td">{d.email ?? '—'}</div>
                   </div>
                 ))}
               </div>
@@ -86,13 +89,12 @@ export default function AdminDashboard(){
             </div>
           </section>
         </div>
-        
+
         <div style={{width:320, flexShrink:0}}>
-          {/* <AdminRealtimeFeed events={events} /> */}
           <div className="connection-status">
             <div className="connection-status__label">Server Status</div>
             <div className={`connection-status__value connection-status__value--${connected ? 'connected' : 'disconnected'}`}>
-              {connected ? 'Connected' : 'Offline — Mock data active'}
+              {connected ? 'Connected' : 'Offline — Static data active'}
             </div>
           </div>
         </div>

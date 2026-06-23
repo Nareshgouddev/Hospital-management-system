@@ -1,43 +1,77 @@
 import React from 'react'
-import { doctors as initialDoctors } from '../../data/doctors'
-import { Plus, Pencil, Trash2, X } from 'lucide-react'
+import { getAllDoctors, saveDoctor, updateDoctor, deleteDoctor } from '../../api/hospitalApi'
 
-export default function AdminDoctors(){
-  const storageKey = 'admin:doctors'
-  const [doctors, setDoctors] = React.useState(()=>{
-    try{ const raw = localStorage.getItem(storageKey); return raw ? JSON.parse(raw) : (initialDoctors || []) }catch(e){ return (initialDoctors||[]) }
-  })
-  const [form, setForm] = React.useState({ name:'', specialty:'', email:'', description:'' })
+export default function AdminDoctors() {
+  const [doctors, setDoctors] = React.useState([])
+  const [loading, setLoading] = React.useState(true)
+  const [error, setError] = React.useState('')
+  const [form, setForm] = React.useState({ doctorName: '', speciality: '', email: '', description: '' })
   const [editingId, setEditingId] = React.useState(null)
+  const [saving, setSaving] = React.useState(false)
 
-  React.useEffect(()=>{
-    function onEvent(e){
-      const ev = e.detail
-      if (ev && ev.title && ev.title.toLowerCase().includes('doctor')){
-        setDoctors(prev => [ { id: Date.now(), name: ev.payload?.patient || 'New Doctor', specialty:'General', email:'', description:'' }, ...prev ])
-      }
+  React.useEffect(() => {
+    fetchDoctors()
+  }, [])
+
+  async function fetchDoctors() {
+    setLoading(true)
+    setError('')
+    try {
+      const data = await getAllDoctors()
+      setDoctors(data)
+    } catch (err) {
+      setError('Could not load doctors from server. ' + err.message)
+    } finally {
+      setLoading(false)
     }
-    window.addEventListener('realtime:event', onEvent)
-    return ()=> window.removeEventListener('realtime:event', onEvent)
-  },[])
-
-  // persist on change
-  React.useEffect(()=>{ try{ localStorage.setItem(storageKey, JSON.stringify(doctors)) }catch(e){} },[doctors])
-
-  function addDoctor(ev){
-    ev.preventDefault()
-    if (editingId){
-      setDoctors(prev=>prev.map(d=> d.id===editingId ? { ...d, ...form } : d))
-      setEditingId(null)
-    } else {
-      setDoctors(prev=>[{ id: Date.now(), ...form }, ...prev])
-    }
-    setForm({name:'',specialty:'',email:'',description:''})
   }
 
-  function startEdit(d){ setEditingId(d.id); setForm({ name:d.name||'', specialty:d.specialty||d.specialization||'', email:d.email||'', description:d.description||'' }) }
-  function cancelEdit(){ setEditingId(null); setForm({name:'',specialty:'',email:'',description:''}) }
-  function deleteDoctor(id){ setDoctors(prev=>prev.filter(d=>d.id!==id)) }
+  async function handleSubmit(ev) {
+    ev.preventDefault()
+    setSaving(true)
+    setError('')
+    try {
+      if (editingId) {
+        // Use the real PUT /doctor/update/{id} endpoint
+        const updated = await updateDoctor(editingId, form)
+        setDoctors(prev => prev.map(d => d.doctorId === editingId ? updated : d))
+        setEditingId(null)
+      } else {
+        const created = await saveDoctor(form)
+        setDoctors(prev => [created, ...prev])
+      }
+      setForm({ doctorName: '', speciality: '', email: '', description: '' })
+    } catch (err) {
+      setError('Save failed: ' + err.message)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function handleDelete(id) {
+    if (!window.confirm('Delete this doctor? This action cannot be undone.')) return
+    try {
+      await deleteDoctor(id)
+      setDoctors(prev => prev.filter(d => d.doctorId !== id))
+    } catch (err) {
+      setError('Delete failed: ' + err.message)
+    }
+  }
+
+  function startEdit(d) {
+    setEditingId(d.doctorId)
+    setForm({
+      doctorName: d.doctorName || '',
+      speciality: d.speciality || '',
+      email: d.email || '',
+      description: d.description || '',
+    })
+  }
+
+  function cancelEdit() {
+    setEditingId(null)
+    setForm({ doctorName: '', speciality: '', email: '', description: '' })
+  }
 
   return (
     <>
@@ -46,57 +80,90 @@ export default function AdminDoctors(){
         <p>Add, edit, or remove doctors from the hospital directory.</p>
       </div>
 
+      {error && <div className="admin-auth-card__error" style={{ margin: '0 0 1rem' }}>{error}</div>}
+
       <div className="admin-section">
-        <form onSubmit={addDoctor} className="admin-form-row">
-          <input placeholder="Doctor Name" value={form.name} onChange={e=>setForm({...form,name:e.target.value})} required />
-          <input placeholder="Specialty" value={form.specialty} onChange={e=>setForm({...form,specialty:e.target.value})} />
-          <input placeholder="Email" value={form.email} onChange={e=>setForm({...form,email:e.target.value})} />
-          <input placeholder="Description" value={form.description} onChange={e=>setForm({...form,description:e.target.value})} />
-          <button className="btn" type="submit">
-            {editingId ? 'Update' : 'Add Doctor'}
+        {/* Add / Edit Form */}
+        <form onSubmit={handleSubmit} className="admin-form-row">
+          <input
+            placeholder="Doctor Name *"
+            value={form.doctorName}
+            onChange={e => setForm({ ...form, doctorName: e.target.value })}
+            required
+          />
+          <input
+            placeholder="Speciality"
+            value={form.speciality}
+            onChange={e => setForm({ ...form, speciality: e.target.value })}
+          />
+          <input
+            placeholder="Email"
+            type="email"
+            value={form.email}
+            onChange={e => setForm({ ...form, email: e.target.value })}
+          />
+          <input
+            placeholder="Description"
+            value={form.description}
+            onChange={e => setForm({ ...form, description: e.target.value })}
+          />
+          <button className="btn" type="submit" disabled={saving}>
+            {saving ? 'Saving...' : editingId ? 'Update Doctor' : 'Add Doctor'}
           </button>
-          {editingId && <button type="button" className="btn muted" onClick={cancelEdit}>Cancel</button>}
+          {editingId && (
+            <button type="button" className="btn muted" onClick={cancelEdit}>
+              Cancel
+            </button>
+          )}
         </form>
 
-        <div className="table table--five">
-          <div className="tr header">
-            <div className="td">Name</div>
-            <div className="td">Specialty</div>
-            <div className="td">Email</div>
-            <div className="td">Description</div>
-            <div className="td">Actions</div>
-          </div>
-          {doctors.map(d=> (
-            <div className="tr" key={d.id}>
-              {editingId === d.id ? (
-                <>
-                  <div className="td"><input value={form.name} onChange={e=>setForm({...form,name:e.target.value})} /></div>
-                  <div className="td"><input value={form.specialty} onChange={e=>setForm({...form,specialty:e.target.value})} /></div>
-                  <div className="td"><input value={form.email} onChange={e=>setForm({...form,email:e.target.value})} /></div>
-                  <div className="td"><input value={form.description} onChange={e=>setForm({...form,description:e.target.value})} placeholder="Description" /></div>
-                  <div className="td">
-                    <button className="btn" onClick={addDoctor}>Save</button>
-                    <button className="btn muted" onClick={cancelEdit} style={{marginLeft:4}}>Cancel</button>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="td">{d.name}</div>
-                  <div className="td">{d.specialty || d.specialization || '—'}</div>
-                  <div className="td">{d.email||'—'}</div>
-                  <div className="td">{d.description||'—'}</div>
-                  <div className="td">
-                    <button className="btn" onClick={()=>startEdit(d)} style={{marginRight:4}}>Edit</button>
-                    <button className="btn danger" onClick={()=>deleteDoctor(d.id)}>Delete</button>
-                  </div>
-                </>
-              )}
+        {loading ? (
+          <p style={{ color: '#94a3b8', padding: '1rem' }}>Loading doctors...</p>
+        ) : (
+          <div className="table table--five">
+            <div className="tr header">
+              <div className="td">Name</div>
+              <div className="td">Speciality</div>
+              <div className="td">Email</div>
+              <div className="td">Description</div>
+              <div className="td">Actions</div>
             </div>
-          ))}
-          {doctors.length === 0 && (
-            <div className="tr"><div className="td" style={{gridColumn:'1/-1', textAlign:'center', color:'#94a3b8'}}>No doctors found. Add one above.</div></div>
-          )}
-        </div>
+            {doctors.map(d => (
+              <div className="tr" key={d.doctorId}>
+                {editingId === d.doctorId ? (
+                  <>
+                    <div className="td"><input value={form.doctorName} onChange={e => setForm({ ...form, doctorName: e.target.value })} /></div>
+                    <div className="td"><input value={form.speciality} onChange={e => setForm({ ...form, speciality: e.target.value })} /></div>
+                    <div className="td"><input value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} /></div>
+                    <div className="td"><input value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} /></div>
+                    <div className="td">
+                      <button className="btn" onClick={handleSubmit} disabled={saving}>Save</button>
+                      <button className="btn muted" onClick={cancelEdit} style={{ marginLeft: 4 }}>Cancel</button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="td">{d.doctorName}</div>
+                    <div className="td">{d.speciality || '—'}</div>
+                    <div className="td">{d.email || '—'}</div>
+                    <div className="td">{d.description || '—'}</div>
+                    <div className="td">
+                      <button className="btn" onClick={() => startEdit(d)} style={{ marginRight: 4 }}>Edit</button>
+                      <button className="btn danger" onClick={() => handleDelete(d.doctorId)}>Delete</button>
+                    </div>
+                  </>
+                )}
+              </div>
+            ))}
+            {doctors.length === 0 && (
+              <div className="tr">
+                <div className="td" style={{ gridColumn: '1/-1', textAlign: 'center', color: '#94a3b8' }}>
+                  No doctors found. Add one above.
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </>
   )

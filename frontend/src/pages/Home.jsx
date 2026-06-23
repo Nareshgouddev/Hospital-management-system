@@ -1,8 +1,7 @@
 import Hero from '../components/Hero';
 import '../styles/home.css';
-import { departments as initialDepartments } from '../data/department';
-import { doctors as initialDoctors } from '../data/doctors';
-import React from 'react';
+import { departments } from '../data/department';
+import { doctors } from '../data/doctors';
 import DoctorCard from '../components/DoctorCard';
 import { motion } from 'framer-motion';
 import { Shield, Users, Zap, Heart, Quote, Phone } from 'lucide-react';
@@ -27,19 +26,6 @@ const testimonials = [
 
 
 export default function Home() {
-  const [departments, setDepartments] = React.useState(initialDepartments);
-  const [doctors, setDoctors] = React.useState(initialDoctors);
-
-  React.useEffect(() => {
-    try {
-      const rawDept = localStorage.getItem('admin:departments');
-      if (rawDept) setDepartments(JSON.parse(rawDept));
-      
-      const rawDoc = localStorage.getItem('admin:doctors');
-      if (rawDoc) setDoctors(JSON.parse(rawDoc));
-    } catch (e) {}
-  }, []);
-
   return (
     <div className="home-page">
 

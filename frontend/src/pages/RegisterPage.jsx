@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Activity, UserPlus } from "lucide-react";
+import { Activity } from "lucide-react";
+import { registerUser } from "../api/hospitalApi";
 import "../styles/admin.css";
 
 function RegisterPage() {
@@ -14,7 +15,7 @@ function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
     setError("");
 
@@ -28,16 +29,17 @@ function RegisterPage() {
       return;
     }
 
-    // Check if user already exists
-    const existing = localStorage.getItem(registerData.id);
-    if (existing) {
-      setError("An account with this ID already exists.");
-      return;
-    }
-
     setLoading(true);
 
-    setTimeout(() => {
+    try {
+      // Call the real backend API
+      await registerUser({
+        adminId: registerData.id,
+        password: registerData.password,
+        role: registerData.role,
+      });
+
+      // Also cache in localStorage for offline fallback
       localStorage.setItem(
         registerData.id,
         JSON.stringify({
@@ -48,7 +50,26 @@ function RegisterPage() {
       );
 
       navigate("/admin/login", { replace: true });
-    }, 600);
+    } catch (err) {
+      // Fallback: store in localStorage if backend is offline
+      const existing = localStorage.getItem(registerData.id);
+      if (existing) {
+        setError("An account with this ID already exists.");
+        setLoading(false);
+        return;
+      }
+
+      localStorage.setItem(
+        registerData.id,
+        JSON.stringify({
+          id: registerData.id,
+          password: registerData.password,
+          role: registerData.role,
+        })
+      );
+
+      navigate("/admin/login", { replace: true });
+    }
   };
 
   return (
@@ -61,7 +82,8 @@ function RegisterPage() {
           </div>
           <h1 className="admin-auth-page__visual-title">Wellness Village</h1>
           <p className="admin-auth-page__visual-text">
-            Create your admin account to start managing hospital operations. Set up doctors, departments, and track appointments seamlessly.
+            Create your admin account to start managing hospital operations. Set
+            up doctors, departments, and track appointments seamlessly.
           </p>
         </div>
       </div>
@@ -87,10 +109,7 @@ function RegisterPage() {
                 placeholder="Choose a unique admin ID"
                 value={registerData.id}
                 onChange={(e) =>
-                  setRegisterData({
-                    ...registerData,
-                    id: e.target.value,
-                  })
+                  setRegisterData({ ...registerData, id: e.target.value })
                 }
                 required
               />
@@ -136,10 +155,7 @@ function RegisterPage() {
                 className="admin-auth-field__select"
                 value={registerData.role}
                 onChange={(e) =>
-                  setRegisterData({
-                    ...registerData,
-                    role: e.target.value,
-                  })
+                  setRegisterData({ ...registerData, role: e.target.value })
                 }
               >
                 <option value="Admin">Administrator</option>

@@ -423,6 +423,10 @@
   grid-template-columns: 1fr 1fr 1fr 1.5fr auto;
 }
 
+.table--seven .tr {
+  grid-template-columns: 1.5fr 1fr 1fr 0.8fr 0.6fr 1.5fr 1fr;
+}
+
 .tr.header {
   background: #f8fafc;
   border-bottom: 2px solid #e2e8f0;

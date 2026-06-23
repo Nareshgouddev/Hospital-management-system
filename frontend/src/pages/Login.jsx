@@ -1,34 +1,59 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Activity, LogIn } from "lucide-react";
+import { Activity } from "lucide-react";
+import { loginUser } from "../api/hospitalApi";
 import "../styles/admin.css";
 
 function Login() {
-  const [loginData, setLoginData] = useState({
-    id: "",
-    password: "",
-  });
+  const [loginData, setLoginData] = useState({ id: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
     setLoading(true);
 
-    // simulate brief delay for UX
-    setTimeout(() => {
+    try {
+      // Call the real backend API
+      const user = await loginUser(loginData.id, loginData.password);
+
+      if (!user || !user.role) {
+        setError("Invalid credentials. Please check your ID and password.");
+        setLoading(false);
+        return;
+      }
+
+      if (user.role !== "Admin" && user.role !== "Doctor") {
+        setError("Access denied. Valid role required.");
+        setLoading(false);
+        return;
+      }
+
+      // Store session in localStorage
+      localStorage.setItem(
+        "admin:session",
+        JSON.stringify({ id: user.adminId, role: user.role, dbId: user.id })
+      );
+
+      navigate("/admin", { replace: true });
+    } catch (err) {
+      // Backend returned 401 or is offline — fallback to localStorage
       let user = null;
       try {
         const raw = localStorage.getItem(loginData.id);
         user = raw ? JSON.parse(raw) : null;
-      } catch (err) {
+      } catch (_) {
         user = null;
       }
 
       if (!user || user.password !== loginData.password) {
-        setError("Invalid credentials. Please check your ID and password.");
+        setError(
+          err.message.includes("Invalid")
+            ? "Invalid credentials. Please check your ID and password."
+            : `Login failed: ${err.message}`
+        );
         setLoading(false);
         return;
       }
@@ -44,7 +69,7 @@ function Login() {
         JSON.stringify({ id: user.id, role: user.role })
       );
       navigate("/admin", { replace: true });
-    }, 600);
+    }
   };
 
   return (
@@ -57,7 +82,9 @@ function Login() {
           </div>
           <h1 className="admin-auth-page__visual-title">Wellness Village</h1>
           <p className="admin-auth-page__visual-text">
-            Manage your hospital operations efficiently with our comprehensive admin dashboard. Monitor appointments, manage doctors, and track departments all in one place.
+            Manage your hospital operations efficiently with our comprehensive
+            admin dashboard. Monitor appointments, manage doctors, and track
+            departments all in one place.
           </p>
         </div>
       </div>
@@ -97,10 +124,7 @@ function Login() {
                 placeholder="Enter your password"
                 value={loginData.password}
                 onChange={(e) =>
-                  setLoginData({
-                    ...loginData,
-                    password: e.target.value,
-                  })
+                  setLoginData({ ...loginData, password: e.target.value })
                 }
                 required
               />

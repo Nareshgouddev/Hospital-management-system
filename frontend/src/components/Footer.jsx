@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Facebook, Twitter, Instagram, Linkedin, Mail, Phone, MapPin } from 'lucide-react';
+import { Globe, MessageSquare, Share2, Link2, Mail, Phone, MapPin } from 'lucide-react';
 
 export default function Footer() {
   return (
@@ -30,7 +30,7 @@ export default function Footer() {
             </p>
 
             <div className="site-footer__socials">
-              {[Facebook, Twitter, Instagram, Linkedin].map((Icon, i) => (
+              {[Globe, MessageSquare, Share2, Link2].map((Icon, i) => (
                 <a key={i} href="#" className="site-footer__social-link">
                   <Icon />
                 </a>

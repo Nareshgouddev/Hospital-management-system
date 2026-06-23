@@ -1,14 +1,15 @@
 import Navbar from './components/Navbar'
+import Footer from './components/Footer'
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import Home from './pages/Home'
 import Department from './pages/Department'
+import DepartmentDetail from './pages/DepartmentDetail'
 import Doctors from './pages/DoctorListPage'
 import Appointment from './pages/BookAppointment'
-// import AppointmentHistory from './pages/AppointmentHistorypage'
+import AppointmentHistory from './pages/AppointmentHistorypage'
 import Contact from './pages/Contact'
 import About from './pages/About'
 import Services from './pages/Services'
-// import Footer from './components/Footer'
 
 // Admin
 import Login from './pages/Login'
@@ -36,9 +37,10 @@ const App = () => {
           <Route path="/dashboard" element={<Home />} />
           <Route path="/home" element={<Home />} />
           <Route path="/departments" element={<Department />} />
+          <Route path="/departments/:id" element={<DepartmentDetail />} />
           <Route path="/doctors" element={<Doctors />} />
           <Route path="/appointment" element={<Appointment />} />
-          {/* <Route path="/appointments" element={<AppointmentHistory />} /> */}
+          <Route path="/appointments" element={<AppointmentHistory />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/about" element={<About />} />
           <Route path="/services" element={<Services />} />
@@ -62,10 +64,11 @@ const App = () => {
             <Route path="appointments" element={<AdminAppointments />} />
           </Route>
 
+          {/* 404 — catch all */}
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </main>
-      {/* {!isAdminRoute && <Footer />} */}
+      {!isAdminRoute && <Footer />}
     </div>
   )
 }

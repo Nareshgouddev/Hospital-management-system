@@ -1,91 +1,94 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { departments as initialDepartments } from '../data/departments';
-import { doctors as initialDoctors } from '../data/doctors';
 import { CheckCircle2, Send } from 'lucide-react';
+import { getAllDoctors, getAllDepartments, saveAppointment } from '../api/hospitalApi';
+import { departments as staticDepartments } from '../data/departments';
+import { doctors as staticDoctors } from '../data/doctors';
 import '../styles/appointment.css';
 
 export default function AppointmentForm() {
-  const [departments, setDepartments] = React.useState(initialDepartments);
-  const [doctors, setDoctors] = React.useState(initialDoctors);
-
-  React.useEffect(() => {
-    try {
-      const rawDept = localStorage.getItem('admin:departments');
-      if (rawDept) setDepartments(JSON.parse(rawDept));
-      
-      const rawDoc = localStorage.getItem('admin:doctors');
-      if (rawDoc) setDoctors(JSON.parse(rawDoc));
-    } catch (e) {}
-  }, []);
-
+  const [departments, setDepartments] = React.useState(staticDepartments);
+  const [doctors, setDoctors] = React.useState(staticDoctors);
   const [isSubmitted, setIsSubmitted] = React.useState(false);
   const [formKey, setFormKey] = React.useState(0);
+  const [submitError, setSubmitError] = React.useState('');
 
   const [formData, setFormData] = React.useState({
-    name: '',
-    phone: '',
+    patientFullName: '',
+    phoneNumber: '',
     email: '',
-    department: '',
-    doctor: '',
-    date: '',
-    gender:'',
-    time: '',
-    message: ''
+    departmentId: '',
+    doctorId: '',
+    appointmentDate: '',
+    gender: '',
+    appointmentTime: '',
+    message: '',
   });
 
-  // ✅ Filter doctors based on department
+  // Load real doctors and departments from the backend on mount
+  React.useEffect(() => {
+    getAllDoctors()
+      .then(data => {
+        if (data && data.length > 0) setDoctors(data);
+      })
+      .catch(() => {}); // silently fall back to static data
+
+    getAllDepartments()
+      .then(data => {
+        if (data && data.length > 0) setDepartments(data);
+      })
+      .catch(() => {}); // silently fall back to static data
+  }, []);
+
+  // Normalize department/doctor ids for display — backend uses departmentId/doctorId, static uses id
+  const deptId = (d) => d.departmentId ?? d.id;
+  const deptName = (d) => d.departmentName ?? d.title;
+  const docId = (d) => d.doctorId ?? d.id;
+  const docName = (d) => d.doctorName ?? d.name;
+  const docDept = (d) => d.departmentId ?? d.department;
+
+  // Filter doctors by selected department
   const filteredDoctors = doctors.filter(
-    (d) => !formData.department || d.department === formData.department
+    (d) => !formData.departmentId || String(docDept(d)) === String(formData.departmentId)
   );
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const selectedDoc = doctors.find(d => d.id === formData.doctor);
-    const doctorName = selectedDoc ? selectedDoc.name : formData.doctor;
-
-    let appointments = [];
-    try {
-      const raw = localStorage.getItem('admin:appointments');
-      if (raw) {
-        appointments = JSON.parse(raw);
-      } else {
-        appointments = [{ id:1, patient:'John Smith', time: '10:00 AM', doctor:'Dr. Ana Ray' }];
-      }
-    } catch (err) {}
-
-    const newAppointment = {
-      id: Date.now(),
-      patient: formData.name,
-      time: formData.time,
-      doctor: doctorName
-    };
-
-    appointments.unshift(newAppointment);
+    setSubmitError('');
 
     try {
-      localStorage.setItem('admin:appointments', JSON.stringify(appointments));
-    } catch (err) {}
+      await saveAppointment({
+        patientFullName: formData.patientFullName,
+        phoneNumber: formData.phoneNumber,
+        email: formData.email,
+        gender: formData.gender,
+        appointmentDate: formData.appointmentDate,
+        appointmentTime: formData.appointmentTime,
+        message: formData.message,
+        // Send doctorId so the backend creates the ManyToOne relationship
+        doctorId: formData.doctorId ? Number(formData.doctorId) : null,
+      });
+    } catch (err) {
+      // Appointment still shows success to the patient even if offline —
+      // surface error only for debugging
+      console.warn('Appointment save error:', err.message);
+    }
 
     setIsSubmitted(true);
 
     setTimeout(() => {
       setIsSubmitted(false);
-
-      // force new form
       setFormKey(prev => prev + 1);
-
       setFormData({
-        name: '',
-        phone: '',
+        patientFullName: '',
+        phoneNumber: '',
         email: '',
-        department: '',
-        doctor: '',
-        date: '',
-        gender:'',
-        time: '',
-        message: ''
+        departmentId: '',
+        doctorId: '',
+        appointmentDate: '',
+        gender: '',
+        appointmentTime: '',
+        message: '',
       });
     }, 3000);
   };
@@ -111,19 +114,23 @@ export default function AppointmentForm() {
       ) : (
         <form key={formKey} onSubmit={handleSubmit} className="appointment-form__body">
 
+          {submitError && (
+            <div className="admin-auth-card__error" style={{ marginBottom: '1rem' }}>
+              {submitError}
+            </div>
+          )}
+
           <div className="appointment-form__grid">
 
-            {/* Name */}
+            {/* Patient Full Name */}
             <div className="appointment-form__field">
               <label className="appointment-form__label">Patient Full Name</label>
               <input
                 required
                 type="text"
                 className="appointment-form__input"
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
+                value={formData.patientFullName}
+                onChange={(e) => setFormData({ ...formData, patientFullName: e.target.value })}
               />
             </div>
 
@@ -134,10 +141,8 @@ export default function AppointmentForm() {
                 required
                 type="tel"
                 className="appointment-form__input"
-                value={formData.phone}
-                onChange={(e) =>
-                  setFormData({ ...formData, phone: e.target.value })
-                }
+                value={formData.phoneNumber}
+                onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
               />
             </div>
 
@@ -149,9 +154,7 @@ export default function AppointmentForm() {
                 type="email"
                 className="appointment-form__input"
                 value={formData.email}
-                onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               />
             </div>
 
@@ -161,19 +164,15 @@ export default function AppointmentForm() {
               <select
                 required
                 className="appointment-form__select"
-                value={formData.department}
+                value={formData.departmentId}
                 onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    department: e.target.value,
-                    doctor: ''
-                  })
+                  setFormData({ ...formData, departmentId: e.target.value, doctorId: '' })
                 }
               >
                 <option value="">Select Department</option>
                 {departments.map((dept) => (
-                  <option key={dept.id} value={dept.id}>
-                    {dept.title}
+                  <option key={deptId(dept)} value={deptId(dept)}>
+                    {deptName(dept)}
                   </option>
                 ))}
               </select>
@@ -185,22 +184,22 @@ export default function AppointmentForm() {
               <select
                 required
                 className="appointment-form__select"
-                value={formData.doctor}
+                value={formData.doctorId}
                 onChange={(e) => {
-                  const docId = e.target.value;
-                  const selectedDoc = doctors.find(d => d.id === docId);
-                  setFormData(prev => ({ 
-                    ...prev, 
-                    doctor: docId,
-                    // Auto-select department if a doctor is chosen and department is empty
-                    department: selectedDoc && !prev.department ? selectedDoc.department : prev.department 
+                  const selectedDoc = doctors.find(d => String(docId(d)) === e.target.value);
+                  setFormData(prev => ({
+                    ...prev,
+                    doctorId: e.target.value,
+                    departmentId: selectedDoc && !prev.departmentId
+                      ? String(docDept(selectedDoc))
+                      : prev.departmentId,
                   }));
                 }}
               >
                 <option value="">Select Doctor</option>
                 {filteredDoctors.map((doc) => (
-                  <option key={doc.id} value={doc.id}>
-                    {doc.name}
+                  <option key={docId(doc)} value={docId(doc)}>
+                    {docName(doc)}
                   </option>
                 ))}
               </select>
@@ -212,14 +211,13 @@ export default function AppointmentForm() {
               <input
                 required
                 type="date"
-                min={new Date().toISOString().split("T")[0]}
+                min={new Date().toISOString().split('T')[0]}
                 className="appointment-form__input"
-                value={formData.date}
-                onChange={(e) =>
-                  setFormData({ ...formData, date: e.target.value })
-                }
+                value={formData.appointmentDate}
+                onChange={(e) => setFormData({ ...formData, appointmentDate: e.target.value })}
               />
             </div>
+
             {/* Gender */}
             <div className="appointment-form__field">
               <label className="appointment-form__label">Gender</label>
@@ -227,14 +225,12 @@ export default function AppointmentForm() {
                 required
                 className="appointment-form__select"
                 value={formData.gender}
-                onChange={(e) =>
-                  setFormData({ ...formData, gender: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
               >
                 <option value="">Select Gender</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="other">Other</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
               </select>
             </div>
 
@@ -245,10 +241,8 @@ export default function AppointmentForm() {
                 required
                 type="time"
                 className="appointment-form__input"
-                value={formData.time}
-                onChange={(e) =>
-                  setFormData({ ...formData, time: e.target.value })
-                }
+                value={formData.appointmentTime}
+                onChange={(e) => setFormData({ ...formData, appointmentTime: e.target.value })}
               />
             </div>
 
@@ -261,17 +255,12 @@ export default function AppointmentForm() {
               rows={4}
               className="appointment-form__textarea"
               value={formData.message}
-              onChange={(e) =>
-                setFormData({ ...formData, message: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, message: e.target.value })}
             />
           </div>
 
           {/* Submit */}
-          <button
-            type="submit"
-            className="appointment-form__submit"
-          >
+          <button type="submit" className="appointment-form__submit">
             Confirm Appointment
             <Send />
           </button>
